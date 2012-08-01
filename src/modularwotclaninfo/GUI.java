@@ -278,7 +278,7 @@ public class GUI extends JFrame {
         vehicles = Utils.sortVehiclesByNation(vehicles);
         for (Vehicle v : vehicles) {
             if (v.getTier() >= minVClassTiers.get(v.getVClass())) {
-                vPanel.addNation(v);
+                vPlayerPanel.addNation(v);
             }
         }
         vPanel.setVisible(false);
