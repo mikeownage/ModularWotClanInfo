@@ -1,8 +1,8 @@
 *.class
 *.jar
 
-build/classes/*
+build/classes/**
 dist/**
-dist/*
+
 dist/settings.ini
 settings.ini
