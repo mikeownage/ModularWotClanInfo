@@ -2,6 +2,7 @@
 *.jar
 
 build/classes/**
+build/**
 dist/**
 
 dist/settings.ini
