@@ -25,3 +25,7 @@ Planned
 * probably with 8.0 :
 * per-vehicle efficiency -> avg. top tank efficiency
 * and more based on the stats released with 8.0
+
+IDE
+---
+NetBeans 7.2
