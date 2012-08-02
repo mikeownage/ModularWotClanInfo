@@ -564,7 +564,7 @@ public class GUI extends JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Modular WoT Clan Info - v0.10 alpha - by Yoyo117");
         setName("MainFrame"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(1130, 675));
+        setPreferredSize(new java.awt.Dimension(1130, 687));
 
         topPanel.setPreferredSize(new java.awt.Dimension(1130, 58));
 
@@ -988,7 +988,13 @@ public class GUI extends JFrame {
             SettingsFrame s = new SettingsFrame(this);
             s.setLocationRelativeTo(this);
             s.setVisible(true);
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            errorPanel("Couldn't load "+SettingsFrame.settingsFile.getName()+":"
+                    + e.getMessage() + '\n' + sw.toString(),
+                    " Error loading config file");
+        }
     }//GEN-LAST:event_optionsButtonMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

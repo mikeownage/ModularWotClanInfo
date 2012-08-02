@@ -37,7 +37,6 @@ public class SettingsFrame extends JFrame {
     public SettingsFrame(GUI gui) throws IOException { // only invoke as new runnable (?)
         this.gui = gui;
         this.setLocationRelativeTo(this.gui);
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         initComponents();
         this.layout = (GridBagLayout)getContentPane().getLayout();
         if (!settingsFile.exists()) { settingsFile.createNewFile(); }
@@ -112,7 +111,7 @@ public class SettingsFrame extends JFrame {
         unknownLabel = new javax.swing.JLabel();
         unknownTier = new javax.swing.JComboBox();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         applyButton.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
