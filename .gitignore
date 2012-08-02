@@ -1,6 +1,7 @@
 *.class
 *.jar
 
+build/classes/modularwotclaninfo/**
 build/classes/**
 dist/**
 
