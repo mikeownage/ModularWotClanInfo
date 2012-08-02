@@ -1,3 +1,4 @@
+*.class
 build/classes/*
 dist/settings.ini
 settings.ini
