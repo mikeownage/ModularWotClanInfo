@@ -160,8 +160,14 @@
             </Property>
           </Properties>
           <Events>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="inputTextFieldMouseClicked"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="inputTextFieldActionPerformed"/>
+            <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="inputTextFieldKeyTyped"/>
           </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JSuggestField(this)"/>
+            <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="JSuggestField sf = (JSuggestField)inputTextField;&#xa;sf.setMinimumSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()));&#xa;sf.setMaximumSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()*10));&#xa;sf.setPreferredSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()*10));"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
               <AbsoluteConstraints x="185" y="3" width="620" height="-1"/>

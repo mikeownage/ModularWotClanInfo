@@ -3,6 +3,7 @@ package modularwotclaninfo;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import javax.swing.*;
@@ -21,6 +23,9 @@ import org.pushingpixels.substance.api.skin.RavenSkin;
  *
  * @author Yoyo117 (johnp)
  */
+@SuppressWarnings({"ReturnOfCollectionOrArrayField",
+    "AssignmentToCollectionOrArrayFieldFromParameter",
+    "UseOfObsoleteCollectionType"})
 public class GUI extends JFrame {
 
     public static void main(String[] params)
@@ -42,6 +47,8 @@ public class GUI extends JFrame {
     private VehiclePanel vPanel;
     private VehiclePanel vPlayerPanel;
     private TreeMap<String, Integer> minVClassTiers;
+    // Cache previous possibleClans
+    private HashMap<String, java.util.Vector<PossibleClan>> allPossibleClans;
     private Clan clan;
     public Clan getClan() { return clan; }
 
@@ -49,6 +56,7 @@ public class GUI extends JFrame {
 
     public GUI() {
         formatter.setMaximumFractionDigits(3);
+        allPossibleClans = new HashMap<>(20);
         // create default minimum tiers TODO: rewrite this all better
         this.minVClassTiers = new TreeMap<>(SettingsFrame.VehicleClassComparator);
         this.minVClassTiers.put("Heavy Tank", 8);
@@ -102,11 +110,22 @@ public class GUI extends JFrame {
         } catch (Exception e) { /* just sip */ }
     }
 
-    public void publishClanInfo(String clanTag, String name, int members, ImageIcon emblem) {
-        tagLabel.setText(clanTag);
-        nameLabel.setText(name);
-        membersLabel.setText(Integer.toString(members));
-        emblemLabel.setIcon(emblem);
+    public synchronized void publishClans(String search, java.util.Vector<PossibleClan> clans) {
+        // add possible clans to suggestion list
+        allPossibleClans.put(search, clans);
+        // only suggest if search equals input
+        if (inputTextField.getText().equals(search)) {
+            JSuggestField sf = (JSuggestField)inputTextField;
+            sf.setSuggestData(clans);
+            sf.showSuggest();
+        }
+    }
+
+    private void publishClanInfo(PossibleClan clan) {
+        tagLabel.setText(clan.getClanTag());
+        nameLabel.setText(clan.getName());
+        membersLabel.setText(Integer.toString(clan.getMemberCount()));
+        emblemLabel.setIcon(clan.getEmblem());
     }
 
     public void publishClanPlayers(Clan clanFound) {
@@ -307,11 +326,17 @@ public class GUI extends JFrame {
             return;
         } // TODO: regex valid clan tags/names
 
-        String searchFor = tagNameButtonGroup.getSelection().equals(tagButton.getModel()) ? "abbreviation" : "name";
-        GetClanData gcd = new GetClanData(input, this, searchFor); // TODO: support clan name search
+        // find best matchh ... TODO: rewrite !
+        JSuggestField sf = (JSuggestField)inputTextField;
+        PossibleClan chosen = sf.getLastChosenExistingVariable();
+        if (chosen != null) publishClanInfo(chosen);
+        String searchType = getTagNameButtonGroup().getSelection().equals(getTagButton().getModel())
+                ? "abbreviation" : "name";
+
+        GetClanData gcd = new GetClanData(chosen, sf.getText(), searchType, this);
         try {
             gcd.execute();
-        } catch (Exception e) { // TODO: search old (bluej-times) errorPanel with ExceptionScrollPane
+        } catch (Exception e) {
             if (e instanceof ExecutionException) {
                 Throwable t = e.getCause();
                 if (t instanceof ProgrammException) {
@@ -331,7 +356,6 @@ public class GUI extends JFrame {
                     errorPanel("Unknown error. Please report:\n"
                             + t.getMessage() + '\n' + sw.toString(),
                             " Unknown execution error");
-
                 }
                 inputReset();
             } else {
@@ -342,6 +366,19 @@ public class GUI extends JFrame {
     }
 
     private Player selectedPlayer;
+
+    public javax.swing.ButtonGroup getTagNameButtonGroup() {
+        return tagNameButtonGroup;
+    }
+
+    public javax.swing.JRadioButton getTagButton() {
+        return tagButton;
+    }
+
+    public javax.swing.JRadioButton getNameButton() {
+        return nameButton;
+    }
+
     private class PlayerCellRenderer extends JLabel implements ListCellRenderer<Player> {
         PlayerCellRenderer() { setOpaque(true); }
         @Override
@@ -426,9 +463,10 @@ public class GUI extends JFrame {
 
             ArrayList<Player> players = new ArrayList<>(100); // worst case
             for (Player p : clan.getPlayers()) {
-                for (Vehicle v : p.getVehicles())
+                for (Vehicle v : p.getVehicles()) {
                     if (v.getName().equals(vName))
                         players.add(p);
+                }
             }
             players.trimToSize();
             players = Utils.sortPlayersByWinrate(players); // do we rlly need this ?
@@ -495,7 +533,7 @@ public class GUI extends JFrame {
         optionsButton = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         searchLabel = new javax.swing.JLabel();
-        inputTextField = new javax.swing.JTextField();
+        inputTextField = new JSuggestField(this);
         searchButton = new javax.swing.JButton();
         tagTextLabel = new javax.swing.JLabel();
         tagLabel = new javax.swing.JLabel();
@@ -624,11 +662,25 @@ public class GUI extends JFrame {
 
         inputTextField.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         inputTextField.setForeground(new java.awt.Color(255, 255, 255));
+        inputTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                inputTextFieldMouseClicked(evt);
+            }
+        });
         inputTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inputTextFieldActionPerformed(evt);
             }
         });
+        inputTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                inputTextFieldKeyTyped(evt);
+            }
+        });
+        JSuggestField sf = (JSuggestField)inputTextField;
+        sf.setMinimumSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()));
+        sf.setMaximumSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()*10));
+        sf.setPreferredSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()*10));
         mainPanel.add(inputTextField, new org.netbeans.lib.awtextra.AbsoluteConstraints(185, 3, 620, -1));
 
         searchButton.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
@@ -996,6 +1048,67 @@ public class GUI extends JFrame {
                     " Error loading config file");
         }
     }//GEN-LAST:event_optionsButtonMouseClicked
+
+    private void inputTextFieldMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_inputTextFieldMouseClicked
+        if ("No input specified!".equals(inputTextField.getText())) {
+            inputTextField.setText(""); // clear input
+        }
+    }//GEN-LAST:event_inputTextFieldMouseClicked
+    private GetPossibleClans gpc;
+    private void inputTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_inputTextFieldKeyTyped
+        // handle possibilities
+        boolean returnKey = '\b' == evt.getKeyChar();
+        String newChar = Character.toString(evt.getKeyChar());
+        String text = inputTextField.getText();
+        String completeText = (text+newChar).trim();
+        if (text.length() == 0 && returnKey) { // deleted all -> reset cache
+            allPossibleClans.clear();
+            JSuggestField sf = (JSuggestField)inputTextField;
+            sf.setSuggestData(new java.util.Vector<PossibleClan>(0));
+        } else if (!returnKey) {
+            // try 2 use cache
+            if (allPossibleClans.containsKey(text+newChar)) {
+                JSuggestField sf = (JSuggestField)inputTextField;
+                sf.setSuggestData(allPossibleClans.get(text+newChar));
+                return;
+            }
+            //if (gpc != null && !gpc.isDone()) gpc.cancel(true); // cancel old thread
+            if (completeText.isEmpty()) return;
+            gpc = new GetPossibleClans(text+newChar, this);
+            try {
+                gpc.execute();
+            } catch (Exception e) {
+                if (e instanceof ExecutionException) {
+                    Throwable t = e.getCause();
+                    if (t instanceof ProgrammException) {
+                        ProgrammException pe = (ProgrammException)t;
+                        pe.publish();
+                    } else if (t instanceof IOException) {
+                        // TODO: differentiate between no connection and server down
+                        IOException ioe = (IOException)t;
+                        StringWriter sw = new StringWriter();
+                        ioe.printStackTrace(new PrintWriter(sw));
+                        errorPanel("Couldn't retrieve data.\n"
+                                + "Please check if you can connect to the World of Tanks website.",
+                                " Connection error (GUI)");
+                    } else {
+                        StringWriter sw = new StringWriter();
+                        t.printStackTrace(new PrintWriter(sw));
+                        errorPanel("Unknown error. Please report:\n"
+                                + t.getMessage() + '\n' + sw.toString(),
+                                " Unknown execution error");
+                    }
+                    inputReset();
+                } else {
+                    errorPanel("Unknown error. Please report:\n" + e.getMessage() + '\n'
+                            + e.getStackTrace().toString(), " Unknown error");
+                }
+            }
+        } else { // use cached
+            JSuggestField sf = (JSuggestField)inputTextField;
+            sf.setSuggestData(allPossibleClans.get(text));
+        }
+    }//GEN-LAST:event_inputTextFieldKeyTyped
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel avgDmgLabel;

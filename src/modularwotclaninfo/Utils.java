@@ -1,6 +1,11 @@
 package modularwotclaninfo;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -128,5 +133,43 @@ public class Utils {
         List<Vehicle> players_list = Arrays.asList(vehicles);
         Collections.sort(players_list, VehicleClassComparator);
         return vehicles;
+    }
+
+    public static void handleExecutionException(ExecutionException e, final GUI gui) {
+        final Throwable t = e.getCause();
+        if (t instanceof ExecutionException) { // comes from GetPlayerData (doubled)
+            // not in EDT !! -> fix this
+            final Throwable gpdT = t.getCause();
+            final StringWriter sw = new StringWriter();
+            gpdT.printStackTrace(new PrintWriter(sw));
+            SwingUtilities.invokeLater(new Runnable(){
+                @Override
+                public void run(){
+                    gui.errorPanel("Unknown error. Please report:\n"
+                    + gpdT.getMessage() + '\n' + sw.toString(),
+                    " Unknown execution error");
+                }
+            });
+        } else if (t instanceof ProgrammException) {
+            ProgrammException pe = (ProgrammException)t;
+            pe.publish();
+        } else if (t instanceof IOException) {
+            // TODO: differentiate between no connection and server down
+            IOException ioe = (IOException)t;
+            StringWriter sw = new StringWriter();
+            ioe.printStackTrace(new PrintWriter(sw));
+            gui.errorPanel("Couldn't retrieve data.\n"
+                    + "Please check if you can connect to the World of Tanks website.\n"
+                    + "StackTrace:\n" + t.getMessage() + '\n' + sw.toString(),
+                    " Connection error");
+        } else {
+            StringWriter sw = new StringWriter();
+            t.printStackTrace(new PrintWriter(sw));
+            gui.errorPanel("Unknown error. Please report:\n"
+                    + t.getMessage() + '\n' + sw.toString(),
+                    " Unknown execution error");
+
+        }
+        gui.inputReset();
     }
 }
