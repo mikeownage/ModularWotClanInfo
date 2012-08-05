@@ -115,33 +115,21 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             workers[i] = new GetPlayerData(member.get("account_id").getAsLong(), this.gui);
             workers[i].execute();
         }
-/*
-        // do this while subthreads are running
-        String tag = json_clan.get("abbreviation").getAsString();
-        String name = json_clan.get("name").getAsString();
-        int member_count = json_clan.get("member_count").getAsInt();
-        ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks."+gui.getServerRegion()+json_clan.get("clan_emblem_url").getAsString()));
-        // early-return clan info
-        this.gui.publishClanInfo(tag, name, member_count, emblem);
-*/
 
         ArrayList<Vehicle> vehicles = new ArrayList<>(4_000);
         long start = System.currentTimeMillis();
         for (GetPlayerData w : workers) {
-            try {
-                Player p = w.get();
-                players.add(p);
-                vehicles.addAll(p.getVehicles());
-                // TODO: update progress bar
-                // TODO: sort by tier here ?!? (implementation details)
-            } catch (InterruptedException e) { /* shouldn't happen */}
+            Player p = w.get();
+            players.add(p);
+            vehicles.addAll(p.getVehicles());
+            // TODO: update progress bar
+            // TODO: sort by tier here ?!? (implementation details)
         }
         System.out.printf("Overall time: %dms%n", System.currentTimeMillis()-start);
         vehicles = Utils.sortVehiclesByTier(vehicles);
         vehicles = Utils.sortVehiclesByClass(vehicles);
         vehicles = Utils.sortVehiclesByNation(vehicles);
 
-        // FIXME: doesn't work with USA WGA and EU WG
         players = Utils.sortPlayersByEfficiency(players);
         double avg_top_eff = 0D, avg_eff = 0D;
         for (int i = 0; i < players.size(); i++) {

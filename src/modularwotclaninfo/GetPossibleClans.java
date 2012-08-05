@@ -64,7 +64,6 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
             //if (name.charAt(0) != searchTagName && tag.charAt(0) != searchTagName) continue;
             long ID = o.get("id").getAsLong();
             int member_count = o.get("member_count").getAsInt();
-            System.out.println("http://worldoftanks."+gui.getServerRegion()+o.get("clan_emblem_url").getAsString());
             ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks."+gui.getServerRegion()+o.get("clan_emblem_url").getAsString()));
             possibleClans.add(new PossibleClan(name, tag, ID, member_count, emblem));
         }
