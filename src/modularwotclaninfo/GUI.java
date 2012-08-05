@@ -3,7 +3,6 @@ package modularwotclaninfo;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
@@ -43,11 +42,16 @@ public class GUI extends JFrame {
     }
 
     private static final NumberFormat formatter = NumberFormat.getPercentInstance();
+    private final ImageIcon euOn = new ImageIcon(getClass().getResource("/img/eu2.png"), "EU on");
+    private final ImageIcon euOff = new ImageIcon(getClass().getResource("/img/eu1.png"), "EU off");
+    private final ImageIcon usaOn = new ImageIcon(getClass().getResource("/img/usa2.png"), "USA on");
+    private final ImageIcon usaOff = new ImageIcon(getClass().getResource("/img/usa1.png"), "USA off");
 
+    private String serverRegion = "eu";
     private VehiclePanel vPanel;
     private VehiclePanel vPlayerPanel;
     private TreeMap<String, Integer> minVClassTiers;
-    // Cache previous possibleClans
+    // cache previous possibleClans
     private HashMap<String, java.util.Vector<PossibleClan>> allPossibleClans;
     private Clan clan;
     public Clan getClan() { return clan; }
@@ -112,12 +116,11 @@ public class GUI extends JFrame {
 
     public synchronized void publishClans(String search, java.util.Vector<PossibleClan> clans) {
         // add possible clans to suggestion list
-        allPossibleClans.put(search, clans);
+        allPossibleClans.put(search.toUpperCase(), clans);
         // only suggest if search equals input
-        if (inputTextField.getText().equals(search)) {
-            JSuggestField sf = (JSuggestField)inputTextField;
-            sf.setSuggestData(clans);
-            sf.showSuggest();
+        if (inputTextField.getText().equalsIgnoreCase(search)) {
+            inputTextField.setSuggestData(clans);
+            inputTextField.showSuggest();
         }
     }
 
@@ -327,13 +330,12 @@ public class GUI extends JFrame {
         } // TODO: regex valid clan tags/names
 
         // find best matchh ... TODO: rewrite !
-        JSuggestField sf = (JSuggestField)inputTextField;
-        PossibleClan chosen = sf.getLastChosenExistingVariable();
+        PossibleClan chosen = inputTextField.getLastChosenExistingVariable();
         if (chosen != null) publishClanInfo(chosen);
         String searchType = getTagNameButtonGroup().getSelection().equals(getTagButton().getModel())
                 ? "abbreviation" : "name";
 
-        GetClanData gcd = new GetClanData(chosen, sf.getText(), searchType, this);
+        GetClanData gcd = new GetClanData(chosen, inputTextField.getText(), searchType, this);
         try {
             gcd.execute();
         } catch (Exception e) {
@@ -377,6 +379,10 @@ public class GUI extends JFrame {
 
     public javax.swing.JRadioButton getNameButton() {
         return nameButton;
+    }
+
+    public String getServerRegion() {
+        return serverRegion;
     }
 
     private class PlayerCellRenderer extends JLabel implements ListCellRenderer<Player> {
@@ -531,9 +537,10 @@ public class GUI extends JFrame {
         topSeperator = new javax.swing.JSeparator();
         topLabel = new javax.swing.JLabel();
         optionsButton = new javax.swing.JButton();
+        euLabel = new javax.swing.JLabel();
+        comLabel = new javax.swing.JLabel();
         mainPanel = new javax.swing.JPanel();
         searchLabel = new javax.swing.JLabel();
-        inputTextField = new JSuggestField(this);
         searchButton = new javax.swing.JButton();
         tagTextLabel = new javax.swing.JLabel();
         tagLabel = new javax.swing.JLabel();
@@ -596,6 +603,7 @@ public class GUI extends JFrame {
         tagButton = new javax.swing.JRadioButton();
         nameButton = new javax.swing.JRadioButton();
         searchForLabel = new javax.swing.JLabel();
+        inputTextField = new modularwotclaninfo.JSuggestField(this);
         tagNameButtonGroup.add(tagButton);
         tagNameButtonGroup.add(nameButton);
 
@@ -624,24 +632,49 @@ public class GUI extends JFrame {
             }
         });
 
+        euLabel.setIcon(euOn);
+        euLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                euLabelMouseClicked(evt);
+            }
+        });
+
+        comLabel.setIcon(usaOff);
+        comLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                comLabelMouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout topPanelLayout = new javax.swing.GroupLayout(topPanel);
         topPanel.setLayout(topPanelLayout);
         topPanelLayout.setHorizontalGroup(
             topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(topSeperator)
             .addGroup(topPanelLayout.createSequentialGroup()
-                .addContainerGap(381, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(euLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(8, 8, 8)
+                .addComponent(comLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(282, 282, 282)
                 .addComponent(topLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 408, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 429, Short.MAX_VALUE)
                 .addComponent(optionsButton)
                 .addContainerGap())
         );
         topPanelLayout.setVerticalGroup(
             topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, topPanelLayout.createSequentialGroup()
-                .addGroup(topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(topLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
-                    .addComponent(optionsButton))
+                .addGroup(topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, topPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(euLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(topLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
+                        .addComponent(optionsButton))
+                    .addGroup(topPanelLayout.createSequentialGroup()
+                        .addGap(13, 13, 13)
+                        .addComponent(comLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(topSeperator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -658,30 +691,7 @@ public class GUI extends JFrame {
         searchLabel.setForeground(new java.awt.Color(255, 255, 255));
         searchLabel.setText("Search:");
         searchLabel.setToolTipText("");
-        mainPanel.add(searchLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(144, 0, 40, 25));
-
-        inputTextField.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
-        inputTextField.setForeground(new java.awt.Color(255, 255, 255));
-        inputTextField.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                inputTextFieldMouseClicked(evt);
-            }
-        });
-        inputTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                inputTextFieldActionPerformed(evt);
-            }
-        });
-        inputTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                inputTextFieldKeyTyped(evt);
-            }
-        });
-        JSuggestField sf = (JSuggestField)inputTextField;
-        sf.setMinimumSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()));
-        sf.setMaximumSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()*10));
-        sf.setPreferredSuggestSize(new Dimension(inputTextField.getWidth(), inputTextField.getHeight()*10));
-        mainPanel.add(inputTextField, new org.netbeans.lib.awtextra.AbsoluteConstraints(185, 3, 620, -1));
+        mainPanel.add(searchLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(144, 0, 40, 20));
 
         searchButton.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         searchButton.setForeground(new java.awt.Color(255, 255, 255));
@@ -1009,6 +1019,23 @@ public class GUI extends JFrame {
         searchForLabel.setText("Search for:");
         mainPanel.add(searchForLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 0, 60, 20));
 
+        inputTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                inputTextFieldMouseClicked(evt);
+            }
+        });
+        inputTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                inputTextFieldActionPerformed(evt);
+            }
+        });
+        inputTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                inputTextFieldKeyTyped(evt);
+            }
+        });
+        mainPanel.add(inputTextField, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 0, 620, 20));
+
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
         pack();
@@ -1032,6 +1059,7 @@ public class GUI extends JFrame {
     }//GEN-LAST:event_membersListValueChanged
 
     private void inputTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputTextFieldActionPerformed
+        inputTextField.setText(evt.getActionCommand());
         startSearch();
     }//GEN-LAST:event_inputTextFieldActionPerformed
 
@@ -1054,22 +1082,21 @@ public class GUI extends JFrame {
             inputTextField.setText(""); // clear input
         }
     }//GEN-LAST:event_inputTextFieldMouseClicked
+
     private GetPossibleClans gpc;
     private void inputTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_inputTextFieldKeyTyped
         // handle possibilities
         boolean returnKey = '\b' == evt.getKeyChar();
         String newChar = Character.toString(evt.getKeyChar());
         String text = inputTextField.getText();
-        String completeText = (text+newChar).trim();
+        String completeText = (text+newChar).trim().toUpperCase();
         if (text.length() == 0 && returnKey) { // deleted all -> reset cache
             allPossibleClans.clear();
-            JSuggestField sf = (JSuggestField)inputTextField;
-            sf.setSuggestData(new java.util.Vector<PossibleClan>(0));
+            inputTextField.setSuggestData(new java.util.Vector<PossibleClan>(0));
         } else if (!returnKey) {
             // try 2 use cache
-            if (allPossibleClans.containsKey(text+newChar)) {
-                JSuggestField sf = (JSuggestField)inputTextField;
-                sf.setSuggestData(allPossibleClans.get(text+newChar));
+            if (allPossibleClans.containsKey(completeText)) {
+                inputTextField.setSuggestData(allPossibleClans.get(completeText));
                 return;
             }
             //if (gpc != null && !gpc.isDone()) gpc.cancel(true); // cancel old thread
@@ -1105,10 +1132,36 @@ public class GUI extends JFrame {
                 }
             }
         } else { // use cached
-            JSuggestField sf = (JSuggestField)inputTextField;
-            sf.setSuggestData(allPossibleClans.get(text));
+            inputTextField.setSuggestData(allPossibleClans.get(text.toUpperCase()));
         }
     }//GEN-LAST:event_inputTextFieldKeyTyped
+
+    private void euLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_euLabelMouseClicked
+        if ("com".equals(serverRegion) && inputTextField.isEnabled()) {
+            serverRegion = "eu";
+            euLabel.setIcon(euOn);
+            comLabel.setIcon(usaOff);
+            regionChangedReset();
+        }
+    }//GEN-LAST:event_euLabelMouseClicked
+
+    private void comLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comLabelMouseClicked
+        if ("eu".equals(serverRegion) && inputTextField.isEnabled()) {
+            serverRegion = "com";
+            comLabel.setIcon(usaOn);
+            euLabel.setIcon(euOff);
+            regionChangedReset();
+        }
+    }//GEN-LAST:event_comLabelMouseClicked
+
+    private void regionChangedReset() {
+        allPossibleClans.clear(); // clear cache
+        inputTextField.setText("");
+        inputTextField.setSuggestData(new java.util.Vector<PossibleClan>(0));
+        reset();
+        if (vPanel != null) vPanel.setVisible(false);
+        if (vPlayerPanel != null) vPlayerPanel.setVisible(false);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel avgDmgLabel;
@@ -1128,15 +1181,17 @@ public class GUI extends JFrame {
     private javax.swing.JLabel battlesLabel;
     private javax.swing.JLabel battlesTextLabel;
     private javax.swing.JLabel clanStatsLabel;
+    private javax.swing.JLabel comLabel;
     private javax.swing.JLabel createdByLabel;
     private javax.swing.JLabel defeatsLabel;
     private javax.swing.JLabel defeatsTextLabel;
     private javax.swing.JLabel efficiencyLabel;
     private javax.swing.JLabel efficiencyTextLabel;
     private javax.swing.JLabel emblemLabel;
+    private javax.swing.JLabel euLabel;
     private javax.swing.JLabel hitRatioLabel;
     private javax.swing.JLabel hitRatioTextLabel;
-    private javax.swing.JTextField inputTextField;
+    private modularwotclaninfo.JSuggestField inputTextField;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JSeparator leftPanelSeperator;
     private javax.swing.JPanel leftPlayerPanel;

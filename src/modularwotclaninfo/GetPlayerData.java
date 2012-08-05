@@ -27,8 +27,8 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
     @Override
     protected Player doInBackground() throws Exception
     {
-        //URL URL = new URL("http://worldoftanks.eu/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
-        URL URL = new URL("http://worldoftanks.eu/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
+        //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("User-Agent", "Java like Android");
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
@@ -99,7 +99,7 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
             double last_updated=0D;
             int spotted=0, hitRatio=0, captured=0, dmgDealt=0, frags=0, defended=0;
             int wins=0, losses=0, battles=0, survived=0, avg_xp=0;
-            ArrayList<Vehicle> vehicles = new ArrayList<>(100);
+            ArrayList<Vehicle> vehicles = new ArrayList<>(120);
 
             // parse (performance ~= lower commented part :( )
             reader.beginObject();
@@ -107,12 +107,18 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
                 String name1 = reader.nextName();
                 switch(name1) {
                     case "status":
-                        if (!"ok".equalsIgnoreCase(reader.nextString())) {
+                        String status = reader.nextString();
+                        if (!"ok".equalsIgnoreCase(status)) {
                             while (reader.hasNext()) {
                                 String namex = reader.nextName();
                                 switch (namex) {
                                     case "status_code":
-                                        throw new PlayerAPIException(reader.nextString(), this.gui);
+                                        String code = reader.nextString();
+                                        if ("ACCOUNTS_PROFILE_CLOSED".equals(code)) {
+                                            // XXX: bad hack? return empty player
+                                            return new Player(ID,0D,code,"",null,0,0,0,0D,0D,0D,0D,0,0D,new ArrayList<Vehicle>(0));
+                                        }
+                                        throw new PlayerAPIException("\nID:"+ID+":\n"+status+":\n"+code, this.gui);
                                 }
                             }
                         }
@@ -312,29 +318,32 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
             //System.out.println(System.currentTimeMillis() - start);
 
 
-            vehicles.trimToSize();
-
-            double avg_dmg = (double)dmgDealt/battles;
-            double avg_wr = (double)wins/battles;
-            double avg_lr = (double)losses/battles;
-            double avg_srv = (double)survived/battles;
-
-            double avg_tier = 0;
-            for (Vehicle v : vehicles) {
-                avg_tier += v.getTier()*v.getBattles();
+            double avg_tier = 0D;
+            int maxTier = 0;
+            if (!vehicles.isEmpty()) {
+                vehicles.trimToSize();
+                for (Vehicle v : vehicles) {
+                    avg_tier += v.getTier()*v.getBattles();
+                }
+                avg_tier /= (double)battles;
+                vehicles = Utils.sortVehiclesByTier(vehicles);
+                maxTier = vehicles.get(0).getTier();
             }
-            avg_tier /= (double)battles;
 
-            double avg_frags = (double)frags/battles;
-            double avg_spotted = (double)spotted/battles;
-            double avg_defended = (double)defended/battles;
-            double avg_captured = (double)captured/battles;
-
-            double eff = avg_frags*(350.0D-avg_tier*20.0D) + avg_dmg*(0.2D + 1.5D/avg_tier)
+            // prevent NaN
+            double avg_dmg=0D, avg_wr=0D, avg_lr=0D, avg_srv=0D, eff=0D;
+            if (battles != 0) {
+                avg_dmg = (double)dmgDealt/battles;
+                avg_wr = (double)wins/battles;
+                avg_lr = (double)losses/battles;
+                avg_srv = (double)survived/battles;
+                double avg_frags = (double)frags/battles;
+                double avg_spotted = (double)spotted/battles;
+                double avg_defended = (double)defended/battles;
+                double avg_captured = (double)captured/battles;
+                eff = avg_frags*(350.0D-avg_tier*20.0D) + avg_dmg*(0.2D + 1.5D/avg_tier)
                         + 200.0D*avg_spotted + 150.0D*avg_defended + 150.0D*avg_captured;
-
-            vehicles = Utils.sortVehiclesByTier(vehicles);
-            int maxTier = vehicles.get(0).getTier();
+            }
 
             Icon roleIcon;
             switch(role) {

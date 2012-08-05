@@ -34,6 +34,8 @@ import javax.swing.SwingUtilities;
  *
  * @author David von Ah
  * @author Yoyo117 (johnp)
+ *
+ * TODO: fix "first time new char bug" displaying results that match from last round
  */
 @SuppressWarnings("UseOfObsoleteCollectionType")
 public class JSuggestField extends JTextField {
@@ -83,6 +85,12 @@ public class JSuggestField extends JTextField {
 
 	/** Listeners, fire event when a selection as occured */
 	private LinkedList<ActionListener> listeners;
+
+    /** Just for NetBeans... Do not use !
+     * @deprecated should not be used!
+     */
+    @Deprecated
+    public JSuggestField() { super(); gui=null; }
 
 	/**
 	 * Create a new JSuggestField.
@@ -225,29 +233,25 @@ public class JSuggestField extends JTextField {
 			public void keyReleased(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 					d.setVisible(false);
-					return;
 				} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 					if (d.isVisible()) {
 						list.setSelectedIndex(list.getSelectedIndex() + 1);
 						list.ensureIndexIsVisible(list.getSelectedIndex() + 1);
-						return;
+                        lastChosenExistingVariable = list.getSelectedValue();
 					} else {
-						showSuggest();
-					}
+                        showSuggest();
+                    }
 				} else if (e.getKeyCode() == KeyEvent.VK_UP) {
 					list.setSelectedIndex(list.getSelectedIndex() - 1);
 					list.ensureIndexIsVisible(list.getSelectedIndex() - 1);
-					return;
+                    lastChosenExistingVariable = list.getSelectedValue();
 				} else if (e.getKeyCode() == KeyEvent.VK_ENTER
 						& list.getSelectedIndex() != -1 & suggestions.size() > 0) {
-					setText(String.format("[%s] %s", list.getSelectedValue().getClanTag(),
-                            list.getSelectedValue().getName()));
+					setText(list.getSelectedValue().getClanTag());
 					lastChosenExistingVariable = list.getSelectedValue();
 					fireActionEvent();
 					d.setVisible(false);
-					return;
 				}
-				showSuggest();
 			}
 		});
 		regular = getFont();
@@ -336,7 +340,10 @@ public class JSuggestField extends JTextField {
 	 * e.g. for using JSuggestionField like a ComboBox)
 	 */
 	public void showSuggest() {
-		if (!getText().toLowerCase().contains(lastWord.toLowerCase())) {
+		if (!this.isEnabled()) {
+            return;
+        }
+        if (!getText().toLowerCase().contains(lastWord.toLowerCase())) {
 			suggestions.clear();
 		}
 		if (suggestions.isEmpty()) {
@@ -344,7 +351,6 @@ public class JSuggestField extends JTextField {
 		}
 		if (matcher != null) {
 			matcher.stop = true;
-            Thread.yield();
 		}
 		matcher = new InterruptableMatcher();
 		SwingUtilities.invokeLater(matcher);
@@ -427,7 +433,6 @@ public class JSuggestField extends JTextField {
 					d.setVisible(false);
 				}
 			} catch (Exception e) {
-                e.printStackTrace();
 				// Despite all precautions, external changes have occurred.
 				// Let the new thread handle it...
 			}

@@ -135,24 +135,14 @@ public class Utils {
         return vehicles;
     }
 
-    public static void handleExecutionException(ExecutionException e, final GUI gui) {
+    public static void handleException(Exception e, final GUI gui) {
         final Throwable t = e.getCause();
         if (t instanceof ExecutionException) { // comes from GetPlayerData (doubled)
-            // not in EDT !! -> fix this
             final Throwable gpdT = t.getCause();
-            final StringWriter sw = new StringWriter();
-            gpdT.printStackTrace(new PrintWriter(sw));
-            SwingUtilities.invokeLater(new Runnable(){
-                @Override
-                public void run(){
-                    gui.errorPanel("Unknown error. Please report:\n"
-                    + gpdT.getMessage() + '\n' + sw.toString(),
-                    " Unknown execution error");
-                }
-            });
+            // recurse (1 time) until we get the real cause
+            handleException((Exception)gpdT, gui);
         } else if (t instanceof ProgrammException) {
-            ProgrammException pe = (ProgrammException)t;
-            pe.publish();
+            ((ProgrammException)t).publish();
         } else if (t instanceof IOException) {
             // TODO: differentiate between no connection and server down
             IOException ioe = (IOException)t;
@@ -162,13 +152,28 @@ public class Utils {
                     + "Please check if you can connect to the World of Tanks website.\n"
                     + "StackTrace:\n" + t.getMessage() + '\n' + sw.toString(),
                     " Connection error");
-        } else {
+        } else if (t != null) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
             gui.errorPanel("Unknown error. Please report:\n"
                     + t.getMessage() + '\n' + sw.toString(),
                     " Unknown execution error");
 
+        } else {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            // XXX: bad hack. PlayerAPIException from GetPlayerData doesn't get
+            // caught by 2nd if...
+            String stack = sw.toString();
+            if (stack.contains("PlayerAPIException")) {
+                try {
+                    ((PlayerAPIException)e).publish();
+                    return;
+                } catch (Exception fallthrough) {}
+            }
+            gui.errorPanel("Unknown error. Please report:\n"
+                    + e.getMessage() + '\n' + stack,
+                    " Unknown error");
         }
         gui.inputReset();
     }

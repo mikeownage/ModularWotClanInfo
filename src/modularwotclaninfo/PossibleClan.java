@@ -4,7 +4,7 @@ import javax.swing.ImageIcon;
 
 /**
  *
- * @author Yoyo
+ * @author Yoyo117 (johnp)
  */
 public class PossibleClan {
 

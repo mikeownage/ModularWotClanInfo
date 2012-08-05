@@ -36,9 +36,9 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
     protected Clan doInBackground() throws Exception
     {
         if (bestMatch == null) { // use fallBack
-            //URL URL = new URL("http://worldoftanks.eu/community/clans/?type=table&offset=0&limit=10&order_by="+this.searchType+"&search="+this.clanTagName+"&echo=2&id=clans_index");
+            //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/?type=table&offset=0&limit=10&order_by="+this.searchType+"&search="+this.clanTagName+"&echo=2&id=clans_index");
             // TODO: does API support orderBy ?!?
-            URL URL = new URL("http://worldoftanks.eu/community/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats&search="+this.fallbackInput.replace(" ", "%20")+"&offset=0&limit=10");
+            URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats&search="+this.fallbackInput.replace(" ", "%20")+"&offset=0&limit=10");
             URLConnection URLConnection = URL.openConnection();
             URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
             URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");
@@ -71,7 +71,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
                 }
             }
             if (json_clan == null) {
-                throw new ClanNotFoundException(this.searchType, this.gui);
+                throw new ClanNotFoundException(this.gui);
             }
             String name = json_clan.get("name").getAsString();
             String tag = json_clan.get("abbreviation").getAsString();
@@ -82,8 +82,8 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         }
 
         // get members
-        //URL = new URL("http://worldoftanks.eu/community/clans/"+clanID+"/members/?type=table&offset=0&limit=100&order_by=name&search=&echo=1&id=clan_members_index");
-        URL URL = new URL("http://worldoftanks.eu/community/clans/"+bestMatch.getID()+"/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
+        //URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+clanID+"/members/?type=table&offset=0&limit=100&order_by=name&search=&echo=1&id=clan_members_index");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+bestMatch.getID()+"/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
         URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");
@@ -120,7 +120,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         String tag = json_clan.get("abbreviation").getAsString();
         String name = json_clan.get("name").getAsString();
         int member_count = json_clan.get("member_count").getAsInt();
-        ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks.eu"+json_clan.get("clan_emblem_url").getAsString()));
+        ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks."+gui.getServerRegion()+json_clan.get("clan_emblem_url").getAsString()));
         // early-return clan info
         this.gui.publishClanInfo(tag, name, member_count, emblem);
 */
@@ -134,8 +134,6 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
                 vehicles.addAll(p.getVehicles());
                 // TODO: update progress bar
                 // TODO: sort by tier here ?!? (implementation details)
-            } catch (ExecutionException e) {
-                Utils.handleExecutionException(e, this.gui);
             } catch (InterruptedException e) { /* shouldn't happen */}
         }
         System.out.printf("Overall time: %dms%n", System.currentTimeMillis()-start);
@@ -143,6 +141,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         vehicles = Utils.sortVehiclesByClass(vehicles);
         vehicles = Utils.sortVehiclesByNation(vehicles);
 
+        // FIXME: doesn't work with USA WGA and EU WG
         players = Utils.sortPlayersByEfficiency(players);
         double avg_top_eff = 0D, avg_eff = 0D;
         for (int i = 0; i < players.size(); i++) {
@@ -150,6 +149,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             avg_eff += players.get(i).getEfficiency();
         }
         avg_eff /= players.size();
+        if (avg_top_eff == 0D) avg_top_eff = avg_eff;
 
         players = Utils.sortPlayersByWinrate(players);
         double avg_top_wr = 0D, avg_wr = 0D;
@@ -158,6 +158,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             avg_wr += players.get(i).getAvg_wr();
         }
         avg_wr /= players.size();
+        if (avg_top_wr == 0D) avg_top_eff = avg_wr;
 
         return new Clan(bestMatch.getName(), bestMatch.getClanTag(), bestMatch.getID(),
                 players, vehicles, avg_wr, avg_top_wr, avg_eff, avg_top_eff, bestMatch.getEmblem());
@@ -169,7 +170,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             Clan clan = get();
             this.gui.publishClanPlayers(clan);
         } catch (ExecutionException e) {
-            Utils.handleExecutionException(e, this.gui);
+            Utils.handleException(e, this.gui);
         } catch (InterruptedException e) { e.printStackTrace(); gui.inputReset(); }
     }
 

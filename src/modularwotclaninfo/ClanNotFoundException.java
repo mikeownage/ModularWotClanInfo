@@ -5,12 +5,10 @@ package modularwotclaninfo;
  * @author Yoyo117 (johnp)
  */
 public class ClanNotFoundException extends Exception implements ProgrammException {
-    private final String searchType;
     private final GUI gui;
 
-    public ClanNotFoundException(String searchType, GUI gui) {
+    public ClanNotFoundException(GUI gui) {
         super();
-        this.searchType = searchType;
         this.gui = gui;
     }
 

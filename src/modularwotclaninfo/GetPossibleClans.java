@@ -12,9 +12,7 @@ import javax.swing.SwingWorker;
 
 /**
  *
- * @author Yoyo
- *
- * TODO: make one long search (100+ clans) or do a search for each typed key ??
+ * @author Yoyo117 (johnp)
  */
 @SuppressWarnings({"ReturnOfCollectionOrArrayField", "UseOfObsoleteCollectionType"})
 public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<PossibleClan>> {
@@ -34,7 +32,7 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
     protected Vector<PossibleClan> doInBackground() throws Exception
     {
         long start = System.currentTimeMillis();
-        URL URL = new URL("http://worldoftanks.eu/community/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats&search="+this.searchTagName+"&offset=0&limit=10");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats&search="+this.searchTagName+"&offset=0&limit=10");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
         URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");
@@ -66,7 +64,8 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
             //if (name.charAt(0) != searchTagName && tag.charAt(0) != searchTagName) continue;
             long ID = o.get("id").getAsLong();
             int member_count = o.get("member_count").getAsInt();
-            ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks.eu"+o.get("clan_emblem_url").getAsString()));
+            System.out.println("http://worldoftanks."+gui.getServerRegion()+o.get("clan_emblem_url").getAsString());
+            ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks."+gui.getServerRegion()+o.get("clan_emblem_url").getAsString()));
             possibleClans.add(new PossibleClan(name, tag, ID, member_count, emblem));
         }
 
@@ -81,7 +80,7 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
             Vector<PossibleClan> clans = get();
             this.gui.publishClans(searchTagName, clans);
         } catch (ExecutionException e) {
-            Utils.handleExecutionException(e, this.gui);
+            Utils.handleException(e, this.gui);
         } catch (InterruptedException e) { e.printStackTrace(); gui.inputReset(); }
     }
 }
