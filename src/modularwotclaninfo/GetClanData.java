@@ -23,6 +23,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
     private PossibleClan bestMatch;
 
     private ArrayList<Player> players;
+    private ArrayList<Province> provinces;
 
     protected GetClanData(PossibleClan bestMatch, String fallbackInput, String searchType, GUI gui)
     {
@@ -33,6 +34,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
     }
 
     @Override
+    @SuppressWarnings("empty-statement")
     protected Clan doInBackground() throws Exception
     {
         if (bestMatch == null) { // use fallBack
@@ -81,6 +83,10 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             bestMatch = new PossibleClan(name, tag, ID, member_count, emblem);
         }
 
+        // get provinces
+        GetProvinces provinceWorker = new GetProvinces(bestMatch.getID(), this.gui);
+        provinceWorker.execute();
+
         // get members
         //URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+clanID+"/members/?type=table&offset=0&limit=100&order_by=name&search=&echo=1&id=clan_members_index");
         URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+bestMatch.getID()+"/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
@@ -114,42 +120,61 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             JsonObject member = members.get(i).getAsJsonObject();
             workers[i] = new GetPlayerData(member.get("account_id").getAsLong(), this.gui);
             workers[i].execute();
-        }
+        } // TODO: see if there's some sort of "worker pool" with a getAll() or getFirst()
 
-        ArrayList<Vehicle> vehicles = new ArrayList<>(4_000);
+        // In the meantime see if GetProvinces is ready
+        this.provinces = provinceWorker.get();
+
+        ArrayList<Vehicle> vehicles = new ArrayList<>(5000);
         long start = System.currentTimeMillis();
         for (GetPlayerData w : workers) {
             Player p = w.get();
             players.add(p);
             vehicles.addAll(p.getVehicles());
             // TODO: update progress bar
-            // TODO: sort by tier here ?!? (implementation details)
+            // TODO: sort by tier already here ?!? (implementation details)
         }
-        System.out.printf("Overall time: %dms%n", System.currentTimeMillis()-start);
+        vehicles.trimToSize();
+        System.out.printf("Vs:"+vehicles.size()+"\nOverall time: %dms%n", System.currentTimeMillis()-start);
         vehicles = Utils.sortVehiclesByTier(vehicles);
         vehicles = Utils.sortVehiclesByClass(vehicles);
         vehicles = Utils.sortVehiclesByNation(vehicles);
 
-        players = Utils.sortPlayersByEfficiency(players);
-        double avg_top_eff = 0D, avg_eff = 0D;
-        for (int i = 0; i < players.size(); i++) {
-            if (i == 20) avg_top_eff = avg_eff/20;
-            avg_eff += players.get(i).getEfficiency();
-        }
-        avg_eff /= players.size();
-        if (avg_top_eff == 0D) avg_top_eff = avg_eff;
+        if (players.size() > 20) { // some small logical optimizations
+            double avg_top_eff=0D, avg_eff=0D, avg_top_wr=0D, avg_wr=0D;
+            players = Utils.sortPlayersByEfficiency(players);
+            for (int i = 0; i < players.size(); i++) {
+                if (i == 20) avg_top_eff = avg_eff/20D;
+                avg_eff += players.get(i).getEfficiency();
+            }
+            avg_eff /= players.size();
 
-        players = Utils.sortPlayersByWinrate(players);
-        double avg_top_wr = 0D, avg_wr = 0D;
-        for (int i = 0; i < players.size(); i++) {
-            if (i == 20) avg_top_wr = avg_wr/20;
-            avg_wr += players.get(i).getAvg_wr();
-        }
-        avg_wr /= players.size();
-        if (avg_top_wr == 0D) avg_top_eff = avg_wr;
+            players = Utils.sortPlayersByWinrate(players);
+            for (int i = 0; i < players.size(); i++) {
+                if (i == 20) avg_top_wr = avg_wr/20D;
+                avg_wr += players.get(i).getAvg_wr();
+            }
+            avg_wr /= players.size();
 
-        return new Clan(bestMatch.getName(), bestMatch.getClanTag(), bestMatch.getID(),
+            return new Clan(bestMatch.getName(), bestMatch.getClanTag(), bestMatch.getID(),
                 players, vehicles, avg_wr, avg_top_wr, avg_eff, avg_top_eff, bestMatch.getEmblem());
+        } else {
+            double avg_eff=0D, avg_wr=0D; // top=all
+            players = Utils.sortPlayersByEfficiency(players);
+            for (int i = 0; i < players.size(); i++) {
+                avg_eff += players.get(i).getEfficiency();
+            }
+            avg_eff /= players.size();
+
+            players = Utils.sortPlayersByWinrate(players);
+            for (int i = 0; i < players.size(); i++) {
+                avg_wr += players.get(i).getAvg_wr();
+            }
+            avg_wr /= players.size();
+
+            return new Clan(bestMatch.getName(), bestMatch.getClanTag(), bestMatch.getID(),
+                players, vehicles, avg_wr, avg_wr, avg_eff, avg_eff, bestMatch.getEmblem());
+        }
     }
 
     @Override // Executed in EDT !!
@@ -157,9 +182,10 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         try {
             Clan clan = get();
             this.gui.publishClanPlayers(clan);
-        } catch (ExecutionException e) {
+            this.gui.publishClanProvinces(provinces);
+        } catch (InterruptedException | ExecutionException e) {
             Utils.handleException(e, this.gui);
-        } catch (InterruptedException e) { e.printStackTrace(); gui.inputReset(); }
+        }
     }
 
 

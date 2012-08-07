@@ -29,6 +29,7 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
     }
 
     @Override
+    @SuppressWarnings("empty-statement")
     protected Vector<PossibleClan> doInBackground() throws Exception
     {
         long start = System.currentTimeMillis();
@@ -61,7 +62,6 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
             JsonObject o = e.getAsJsonObject();
             String name = o.get("name").getAsString();
             String tag = o.get("abbreviation").getAsString();
-            //if (name.charAt(0) != searchTagName && tag.charAt(0) != searchTagName) continue;
             long ID = o.get("id").getAsLong();
             int member_count = o.get("member_count").getAsInt();
             ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks."+gui.getServerRegion()+o.get("clan_emblem_url").getAsString()));
@@ -78,8 +78,8 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
         try {
             Vector<PossibleClan> clans = get();
             this.gui.publishClans(searchTagName, clans);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             Utils.handleException(e, this.gui);
-        } catch (InterruptedException e) { e.printStackTrace(); gui.inputReset(); }
+        }
     }
 }

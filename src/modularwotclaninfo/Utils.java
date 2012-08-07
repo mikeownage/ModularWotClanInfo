@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -53,14 +52,14 @@ public class Utils {
 
     // manually modified for UI purposes (TODO: IMPROVE ME)
     public static int compareVehicleClasses(String class1, String class2) {
-        //hvy@top
+        // Heavy@top
         boolean v1Hvy = class1.equals("Heavy Tank");
         boolean v2Hvy = class2.equals("Heavy Tank");
         if (v1Hvy  && v2Hvy)  return 0;
         if (v1Hvy  && !v2Hvy) return -1;
         if (!v1Hvy && v2Hvy)  return 1;
 
-        //Med>Light
+        // Med>Light
         boolean v1Med = class1.equals("Medium Tank");
         boolean v2Med = class2.equals("Medium Tank");
         if (v1Med && v2Med) return 0;
@@ -70,13 +69,13 @@ public class Utils {
         if (v1Light && v2Light) return 0;
         if (v1Med   && v2Light) return -1;
 
-
-        //SPG@bottom
+        // SPG@bottom
         boolean v1SPG = class1.equals("SPG");
         boolean v2SPG = class2.equals("SPG");
         if (v1SPG  && v2SPG)  return 0;
         if (v1SPG  && !v2SPG) return 1;
         if (!v1SPG && v2SPG)  return -1;
+        // fallback (e.g TD)
         return class1.compareTo(class2);
     }
 
@@ -141,7 +140,7 @@ public class Utils {
             final Throwable gpdT = t.getCause();
             // recurse (1 time) until we get the real cause
             handleException((Exception)gpdT, gui);
-        } else if (t instanceof ProgrammException) {
+        } else if (t instanceof ProgrammException) { // XXX: doesn't work as excpected
             ((ProgrammException)t).publish();
         } else if (t instanceof IOException) {
             // TODO: differentiate between no connection and server down

@@ -50,6 +50,7 @@ public class GUI extends JFrame {
     private String serverRegion = "eu";
     private VehiclePanel vPanel;
     private VehiclePanel vPlayerPanel;
+    private ProvincesPanel provincesPanel;
     private TreeMap<String, Integer> minVClassTiers;
     // cache previous possibleClans
     private HashMap<String, java.util.Vector<PossibleClan>> allPossibleClans;
@@ -65,7 +66,7 @@ public class GUI extends JFrame {
         this.minVClassTiers = new TreeMap<>(SettingsFrame.VehicleClassComparator);
         this.minVClassTiers.put("Heavy Tank", 8);
         this.minVClassTiers.put("Medium Tank", 8);
-        this.minVClassTiers.put("Light Tank", 4);
+        this.minVClassTiers.put("Light Tank", 5);
         this.minVClassTiers.put("Tank Destroyer", 8);
         this.minVClassTiers.put("SPG", 6);
         this.minVClassTiers.put("Unknown", 1);
@@ -85,15 +86,17 @@ public class GUI extends JFrame {
                 // initial ini create
                 SettingsFrame.settingsFile.createNewFile();
                 Ini ini = new Ini(SettingsFrame.settingsFile);
+                ini.put("Settings", "ServerRegion", serverRegion);
                 ini.put("VehicleTiers", "Heavy Tank", 8);
                 ini.put("VehicleTiers", "Medium Tank", 8);
-                ini.put("VehicleTiers", "Light Tank", 4);
+                ini.put("VehicleTiers", "Light Tank", 5);
                 ini.put("VehicleTiers", "Tank Destroyer", 8);
                 ini.put("VehicleTiers", "SPG", 6);
                 ini.put("VehicleTiers", "Unknown", 1);
                 ini.store();
             } else {
                 Ini ini = new Ini(SettingsFrame.settingsFile);
+                iniLoadServerRegion(ini);
                 iniLoadVClassMinTier(ini, "Heavy Tank");
                 iniLoadVClassMinTier(ini, "Medium Tank");
                 iniLoadVClassMinTier(ini, "Light Tank");
@@ -101,7 +104,16 @@ public class GUI extends JFrame {
                 iniLoadVClassMinTier(ini, "SPG");
                 iniLoadVClassMinTier(ini, "Unknown");
             }
-        } catch (Exception ex) { /* just skip */}
+        } catch (IOException e) { /* just skip */}
+    }
+
+    private void iniLoadServerRegion(Ini ini) {
+        serverRegion = ini.get("Settings", "ServerRegion");
+        if (serverRegion == null || serverRegion.isEmpty()) {
+            // correct this and fallback to eu
+            serverRegion = "eu";
+            ini.put("Settings", "ServerRegion", serverRegion);
+        }
     }
 
     private void iniLoadVClassMinTier(Ini ini, String vClass) {
@@ -111,7 +123,7 @@ public class GUI extends JFrame {
                 int minTier = Integer.parseInt(s_minTier);
                 this.minVClassTiers.put(vClass, minTier);
             }
-        } catch (Exception e) { /* just sip */ }
+        } catch (NumberFormatException e) { /* just sip */ }
     }
 
     public synchronized void publishClans(String search, java.util.Vector<PossibleClan> clans) {
@@ -194,6 +206,31 @@ public class GUI extends JFrame {
             }
         }
         mainVehiclePanel.add(vPanel, BorderLayout.CENTER);
+    }
+
+    public void publishClanProvinces(ArrayList<Province> provinces) {
+        if (provinces == null) {
+            // set provinces related gui invisible
+            goldPerDayLabel.setVisible(false);
+            goldPerDay.setText("0");
+            goldPerDay.setVisible(false);
+            tanksProvincesButton.setVisible(false);
+            provincesPanel = null;
+        } else {
+            int gold = 0;
+            for (Province p : provinces) {
+                gold += p.getRevenue();
+            }
+            goldPerDayLabel.setVisible(true);
+            goldPerDay.setText(Integer.toString(gold));
+            goldPerDay.setVisible(true);
+            tanksProvincesButton.setVisible(true);
+            provincesPanel = new ProvincesPanel(provinces, this);
+        }
+    }
+
+    public String getGoldPerDay() {
+        return goldPerDay.getText();
     }
 
     private void increaseCounter(JLabel label) {
@@ -367,8 +404,6 @@ public class GUI extends JFrame {
         }
     }
 
-    private Player selectedPlayer;
-
     public javax.swing.ButtonGroup getTagNameButtonGroup() {
         return tagNameButtonGroup;
     }
@@ -385,6 +420,7 @@ public class GUI extends JFrame {
         return serverRegion;
     }
 
+    private Player selectedPlayer;
     private class PlayerCellRenderer extends JLabel implements ListCellRenderer<Player> {
         PlayerCellRenderer() { setOpaque(true); }
         @Override
@@ -594,6 +630,9 @@ public class GUI extends JFrame {
         avgTopEffTextLabel = new javax.swing.JLabel();
         avgEff = new javax.swing.JLabel();
         avgTopEff = new javax.swing.JLabel();
+        goldPerDayLabel = new javax.swing.JLabel();
+        goldPerDay = new javax.swing.JLabel();
+        tanksProvincesButton = new javax.swing.JButton();
         vehicleScrollPane = new javax.swing.JScrollPane();
         mainVehiclePanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
@@ -610,7 +649,6 @@ public class GUI extends JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Modular WoT Clan Info - v0.10 alpha - by Yoyo117");
         setName("MainFrame"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(1130, 687));
 
         topPanel.setPreferredSize(new java.awt.Dimension(1130, 58));
 
@@ -951,6 +989,32 @@ public class GUI extends JFrame {
         avgTopEff.setForeground(new java.awt.Color(238, 180, 84));
         leftPanel.add(avgTopEff, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 420, 40, 10));
 
+        goldPerDayLabel.setVisible(false);
+        goldPerDayLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
+        goldPerDayLabel.setForeground(new java.awt.Color(255, 255, 255));
+        goldPerDayLabel.setText("Gold per Day:");
+        leftPanel.add(goldPerDayLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(14, 440, 70, -1));
+
+        goldPerDay.setVisible(false);
+        goldPerDay.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
+        goldPerDay.setForeground(new java.awt.Color(255, 172, 0));
+        goldPerDay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/gold.png"))); // NOI18N
+        goldPerDay.setText("0");
+        goldPerDay.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+        goldPerDay.setIconTextGap(2);
+        leftPanel.add(goldPerDay, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 440, -1, -1));
+
+        tanksProvincesButton.setVisible(false);
+        tanksProvincesButton.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
+        tanksProvincesButton.setForeground(new java.awt.Color(255, 255, 255));
+        tanksProvincesButton.setText("Provinces");
+        tanksProvincesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tanksProvincesButtonActionPerformed(evt);
+            }
+        });
+        leftPanel.add(tanksProvincesButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 460, -1, -1));
+
         mainPanel.add(leftPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 62, 160, 510));
 
         vehicleScrollPane.setBorder(null);
@@ -1163,6 +1227,25 @@ public class GUI extends JFrame {
         if (vPlayerPanel != null) vPlayerPanel.setVisible(false);
     }
 
+    private void tanksProvincesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tanksProvincesButtonActionPerformed
+        if ("Provinces".equals(tanksProvincesButton.getText())) {
+            if (vPanel != null) mainVehiclePanel.remove(vPanel);
+            if (vPlayerPanel != null) mainVehiclePanel.remove(vPlayerPanel);
+            mainVehiclePanel.add(provincesPanel, BorderLayout.CENTER);
+            tanksProvincesButton.setText("Tanks");
+        } else { // Tanks
+            mainVehiclePanel.remove(provincesPanel);
+            if (clicked) // restore vPlayerPanel
+                mainVehiclePanel.add(vPlayerPanel, BorderLayout.CENTER);
+            else
+                mainVehiclePanel.add(vPanel, BorderLayout.CENTER);
+            tanksProvincesButton.setText("Provinces");
+        }
+        // artefacts
+        mainVehiclePanel.invalidate();
+        mainVehiclePanel.revalidate();
+        mainVehiclePanel.repaint();
+    }//GEN-LAST:event_tanksProvincesButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel avgDmgLabel;
     private javax.swing.JLabel avgDmgTextLabel;
@@ -1189,6 +1272,8 @@ public class GUI extends JFrame {
     private javax.swing.JLabel efficiencyTextLabel;
     private javax.swing.JLabel emblemLabel;
     private javax.swing.JLabel euLabel;
+    private javax.swing.JLabel goldPerDay;
+    private javax.swing.JLabel goldPerDayLabel;
     private javax.swing.JLabel hitRatioLabel;
     private javax.swing.JLabel hitRatioTextLabel;
     private modularwotclaninfo.JSuggestField inputTextField;
@@ -1217,6 +1302,7 @@ public class GUI extends JFrame {
     private javax.swing.JLabel tagLabel;
     private javax.swing.ButtonGroup tagNameButtonGroup;
     private javax.swing.JLabel tagTextLabel;
+    private javax.swing.JButton tanksProvincesButton;
     private javax.swing.JLabel tierIXLabel;
     private javax.swing.JLabel tierIXNum;
     private javax.swing.JLabel tierLabel;
