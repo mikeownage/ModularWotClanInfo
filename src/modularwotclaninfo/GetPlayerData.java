@@ -1,6 +1,7 @@
 package modularwotclaninfo;
 
-import com.google.gson.stream.JsonReader;
+import com.google.gson.*;
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -40,60 +41,18 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
         // timeout after 20 seconds
         URLConnection.setConnectTimeout(20000);
 
-        // TIMING
-        //long start = System.currentTimeMillis();
 
+        BufferedReader reader = null;
+        StringBuilder data = new StringBuilder(22500); // TODO: optimize capacity
+        JsonParser jsonParser = new JsonParser();
+        JsonElement json = null;
+        try {
+        //try (JsonReader reader = new JsonReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"))) {
+            reader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"));
+            for (String line; (line = reader.readLine()) != null; data.append(line));
+            json = jsonParser.parse(data.toString());
 
-
-        //StringBuilder data = new StringBuilder(22500); // TODO: optimize capacity
-        //JsonParser jsonParser = new JsonParser();
-        //JsonElement json;
-        //try (BufferedReader reader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"))) {
-        try (JsonReader reader = new JsonReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"))) {
-            // TODO: check performance and probably use everywhere || PERFORMES BETTER !
-            //for (String line; (line = reader.readLine()) != null; data.append(line));
-            //json = jsonParser.parse(data.toString());
-
-            // "read while loading"
-            /* // relevant Format
-             obj-begin
-             name "status" == "ok" -> continue
-             name "data"
-              obj-begin
-              name "name"
-              name "vehicles"
-               array-begin
-               for each obj extract info
-               array-end
-              name "updated_at"
-              name "battles"
-               obj-begin
-               name "spotted"
-               name "hits_percents"
-               name "damage_dealt"
-               obj-end
-              name "summary"
-               obj-begin
-               name "wins"
-               name "losses"
-               name "battles_count"
-               obj-end
-              name "experience"
-               obj-begin
-               name "battle_avg_xp"
-               obj-end
-              name "clan"
-               obj-begin
-                name "member"
-                 obj-begin
-                 name "role"
-                 obj-end
-               obj-end
-              obj-end
-             obj-end
-            */
-
-
+/*
             // initialize all empty
             String name=null, role=null;
             double last_updated=0D;
@@ -259,125 +218,116 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
             reader.endObject();
             reader.close();
 
-
-/*
-
-            JsonObject json_data = json.getAsJsonObject().get("data").getAsJsonObject();
-
-            String name = json_data.get("name").getAsString();
-            String role = json_data.get("clan").getAsJsonObject().get("member").getAsJsonObject().get("role").getAsString();
-
-            JsonObject json_summary = json_data.get("summary").getAsJsonObject();
-
-            int battles = json_summary.get("battles_count").getAsInt();
-            int wins = json_summary.get("wins").getAsInt();
-            int losses = json_summary.get("losses").getAsInt();
-
-            JsonObject json_battles = json_data.get("battles").getAsJsonObject();
-
-            int hitRatio = json_battles.get("hits_percents").getAsInt();
-            int dmgDealt = json_battles.get("damage_dealt").getAsInt();
-            int frags = json_battles.get("frags").getAsInt();
-            int spotted = json_battles.get("spotted").getAsInt();
-            int defended = json_battles.get("dropped_capture_points").getAsInt();
-            int captured = json_battles.get("capture_points").getAsInt();
-
-            JsonObject json_exp = json_data.get("experience").getAsJsonObject();
-
-            int avg_xp = json_exp.get("battle_avg_xp").getAsInt();
-
-            JsonArray json_vehicles = json_data.get("vehicles").getAsJsonArray();
-
-            ArrayList<Vehicle> vehicles = new ArrayList<>(json_vehicles.size());
-            for (JsonElement ele : json_vehicles) {
-                JsonObject o = ele.getAsJsonObject();
-                String vname = o.get("localized_name").getAsString();
-                String nation = o.get("nation").getAsString().toUpperCase(); // UI opt
-                String vclass = o.get("class").getAsString();
-
-                // UI optimizations
-                switch (vclass) {
-                    case "heavyTank": vclass = "Heavy Tank"; break;
-                    case "mediumTank": vclass = "Medium Tank"; break;
-                    case "lightTank": vclass = "Light Tank"; break;
-                    case "AT-SPG": vclass = "Tank Destroyer"; break;
-                    default: break;
-                }
-
-                int lvl = o.get("level").getAsInt();
-                int vbattles = o.get("battle_count").getAsInt();
-                int vwins = o.get("win_count").getAsInt();
-                double wr = (double)vwins/vbattles;
-
-                vehicles.add(new Vehicle(vname, nation, vclass, lvl, vbattles, wr));
-            }
-
-            double last_updated = json_data.get("updated_at").getAsDouble();
-
 */
-            //System.out.println(System.currentTimeMillis() - start);
-
-
-            double avg_tier = 0D;
-            int maxTier = 0;
-            if (!vehicles.isEmpty()) {
-                vehicles.trimToSize();
-                for (Vehicle v : vehicles) {
-                    avg_tier += v.getTier()*v.getBattles();
-                }
-                avg_tier /= (double)battles;
-                vehicles = Utils.sortVehiclesByTier(vehicles);
-                maxTier = vehicles.get(0).getTier();
-            }
-
-            // prevent NaN
-            double avg_dmg=0D, avg_wr=0D, avg_lr=0D, avg_srv=0D, eff=0D;
-            if (battles != 0) {
-                avg_dmg = (double)dmgDealt/battles;
-                avg_wr = (double)wins/battles;
-                avg_lr = (double)losses/battles;
-                avg_srv = (double)survived/battles;
-                double avg_frags = (double)frags/battles;
-                double avg_spotted = (double)spotted/battles;
-                double avg_defended = (double)defended/battles;
-                double avg_captured = (double)captured/battles;
-                eff = avg_frags*(350.0D-avg_tier*20.0D) + avg_dmg*(0.2D + 1.5D/avg_tier)
-                        + 200.0D*avg_spotted + 150.0D*avg_defended + 150.0D*avg_captured;
-            }
-
-            Icon roleIcon;
-            switch(role) {
-                case "Soldier":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/soldier.png"), "Soldier");
-                    break;
-                case "Recruit":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/recruit.png"), "Recruit");
-                    break;
-                case "Field Commander":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/fieldcommander.png"), "Field Commander");
-                    break;
-                case "Commander":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/commander.png"), "Commander");
-                    break;
-                case "Deputy Commander":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/deputycommander.png"), "Deputy Commander");
-                    break;
-                case "Recruiter":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/recruiter.png"), "Recruiter");
-                    break;
-                case "Diplomat":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/diplomat.png"), "Recruiter");
-                    break;
-                case "Treasurer":
-                    roleIcon = new ImageIcon(getClass().getResource("/img/treasurer.png"), "Treasurer");
-                    break;
-                default:
-                    System.err.println("Unknown clanRole: "+role);
-                    roleIcon = null;
-            }
-
-            return new Player(this.ID, last_updated, name, role, roleIcon, maxTier,
-                    battles, hitRatio, avg_dmg, avg_wr, avg_lr, avg_srv, avg_xp, eff, vehicles);
+        } finally {
+            if (reader != null) reader.close();
         }
+
+        if (json == null) {
+            // TODO: error handling
+            return new Player(ID,0D,"UNKNOWN_ERROR","",null,0,0,0,0D,0D,0D,0D,0,0D,new ArrayList<Vehicle>(0));
+        }
+
+
+        JsonObject json_data = json.getAsJsonObject().get("data").getAsJsonObject();
+
+        String name = json_data.get("name").getAsString();
+        String role = json_data.get("clan").getAsJsonObject().get("member").getAsJsonObject().get("role").getAsString();
+
+        JsonObject json_summary = json_data.get("summary").getAsJsonObject();
+
+        int battles = json_summary.get("battles_count").getAsInt();
+        int wins = json_summary.get("wins").getAsInt();
+        int losses = json_summary.get("losses").getAsInt();
+        int survived = json_summary.get("survived_battles").getAsInt();
+
+        JsonObject json_battles = json_data.get("battles").getAsJsonObject();
+
+        int hitRatio = json_battles.get("hits_percents").getAsInt();
+        int dmgDealt = json_battles.get("damage_dealt").getAsInt();
+        int frags = json_battles.get("frags").getAsInt();
+        int spotted = json_battles.get("spotted").getAsInt();
+        int defended = json_battles.get("dropped_capture_points").getAsInt();
+        int captured = json_battles.get("capture_points").getAsInt();
+
+        JsonObject json_exp = json_data.get("experience").getAsJsonObject();
+
+        int avg_xp = json_exp.get("battle_avg_xp").getAsInt();
+
+        JsonArray json_vehicles = json_data.get("vehicles").getAsJsonArray();
+
+        ArrayList<Vehicle> vehicles = new ArrayList<Vehicle>(json_vehicles.size());
+        for (JsonElement ele : json_vehicles) {
+            JsonObject o = ele.getAsJsonObject();
+            String vname = o.get("localized_name").getAsString();
+            String nation = o.get("nation").getAsString().toUpperCase(); // UI opt
+            String vclass = o.get("class").getAsString();
+
+            // UI optimizations
+            if ("heavyTank".equals(vclass)) vclass = "Heavy Tank";
+            else if ("mediumTank".equals(vclass)) vclass = "Medium Tank";
+            else if ("lightTank".equals(vclass)) vclass = "Light Tank";
+            else if ("AT-SPG".equals(vclass)) vclass = "Tank Destroyer";
+
+            int lvl = o.get("level").getAsInt();
+            int vbattles = o.get("battle_count").getAsInt();
+            int vwins = o.get("win_count").getAsInt();
+            double wr = (double)vwins/vbattles;
+
+            vehicles.add(new Vehicle(vname, nation, vclass, lvl, vbattles, wr));
+        }
+
+        double last_updated = json_data.get("updated_at").getAsDouble();
+
+
+        double avg_tier = 0D;
+        int maxTier = 0;
+        if (!vehicles.isEmpty()) {
+            vehicles.trimToSize();
+            for (Vehicle v : vehicles) {
+                avg_tier += v.getTier()*v.getBattles();
+            }
+            avg_tier /= (double)battles;
+            vehicles = Utils.sortVehiclesByTier(vehicles);
+            maxTier = vehicles.get(0).getTier();
+        }
+
+        // prevent NaN
+        double avg_dmg=0D, avg_wr=0D, avg_lr=0D, avg_srv=0D, eff=0D;
+        if (battles != 0) {
+            avg_dmg = (double)dmgDealt/battles;
+            avg_wr = (double)wins/battles;
+            avg_lr = (double)losses/battles;
+            avg_srv = (double)survived/battles;
+            double avg_frags = (double)frags/battles;
+            double avg_spotted = (double)spotted/battles;
+            double avg_defended = (double)defended/battles;
+            double avg_captured = (double)captured/battles;
+            eff = avg_frags*(350.0D-avg_tier*20.0D) + avg_dmg*(0.2D + 1.5D/avg_tier)
+                    + 200.0D*avg_spotted + 150.0D*avg_defended + 150.0D*avg_captured;
+        }
+
+        Icon roleIcon = null;
+        if ("Soldier".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/soldier.png"), "Soldier");
+        else if ("Recruit".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/recruit.png"), "Recruit");
+        else if ("Field Commander".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/fieldcommander.png"), "Field Commander");
+        else if ("Commander".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/commander.png"), "Commander");
+        else if ("Deputy Commander".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/deputycommander.png"), "Deputy Commander");
+        else if ("Recruiter".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/recruiter.png"), "Recruiter");
+        else if ("Diplomat".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/diplomat.png"), "Recruiter");
+        else if ("Treasurer".equals(role))
+            roleIcon = new ImageIcon(getClass().getResource("/img/treasurer.png"), "Treasurer");
+        else
+           System.err.println("Unknown clanRole: "+role);
+
+        return new Player(this.ID, last_updated, name, role, roleIcon, maxTier,
+                battles, hitRatio, avg_dmg, avg_wr, avg_lr, avg_srv, avg_xp, eff, vehicles);
     }
 }

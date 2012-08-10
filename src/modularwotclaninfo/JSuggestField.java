@@ -101,9 +101,9 @@ public class JSuggestField extends JTextField {
     public JSuggestField(GUI owner) {
         super();
         this.gui = owner;
-        data = new Vector<>(100);
-        suggestions = new Vector<>(10);
-        listeners = new LinkedList<>();
+        data = new Vector<PossibleClan>(100);
+        suggestions = new Vector<PossibleClan>(10);
+        listeners = new LinkedList<ActionListener>();
         owner.addComponentListener(new ComponentListener() {
             @Override
             public void componentShown(ComponentEvent e) {
@@ -184,7 +184,7 @@ public class JSuggestField extends JTextField {
         d.setUndecorated(true);
         d.setFocusableWindowState(false);
         d.setFocusable(false);
-        list = new JList<>();
+        list = new JList();
         list.addMouseListener(new MouseListener() {
             private int selected;
 

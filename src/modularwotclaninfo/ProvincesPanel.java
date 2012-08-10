@@ -139,9 +139,12 @@ public class ProvincesPanel extends javax.swing.JPanel {
                     Desktop.getDesktop().browse(new URI("http://uc.worldoftanks."
                             + gui.getServerRegion()+"/uc/clanwars/maps/?province="
                             + provinces.get(table.getSelectedRow()).getID()));
-                } catch (URISyntaxException | IOException e) {
+                } catch (URISyntaxException e) {
                     gui.errorPanel("Couldn't open the worldmap in browser:\n"
-                            + e.getMessage(), " ProvinceURLError");
+                            + e.getMessage(), " ProvinceURLSyntaxError");
+                } catch (IOException e) {
+                    gui.errorPanel("Couldn't open the worldmap in browser:\n"
+                            + e.getMessage(), " ProvinceIOError");
                 }
             }
         }

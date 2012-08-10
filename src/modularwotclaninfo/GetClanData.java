@@ -51,9 +51,13 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             // timeout after 10 seconds
             URLConnection.setConnectTimeout(10000);
 
+            BufferedReader clanBufferedReader = null;
             StringBuilder data = new StringBuilder(3000);
-            try (BufferedReader clanBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"))) {
+            try {
+                clanBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"));
                 for (String line; (line = clanBufferedReader.readLine()) != null; data.append(line));
+            } finally {
+                if (clanBufferedReader != null) clanBufferedReader.close();
             }
 
             JsonParser jsonParser = new JsonParser();
@@ -100,9 +104,13 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         // timeout after 15 seconds
         URLConnection.setConnectTimeout(15000);
 
+        BufferedReader membersBufferedReader = null;
         StringBuilder members_data = new StringBuilder(10000);
-        try (BufferedReader membersBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"))) {
+        try {
+            membersBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"));
             for (String line; (line = membersBufferedReader.readLine()) != null; members_data.append(line));
+        } finally {
+            if (membersBufferedReader != null) membersBufferedReader.close();
         }
 
         JsonParser jsonParser = new JsonParser();
@@ -115,7 +123,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         JsonArray members = members_json.get("data").getAsJsonObject().get("members").getAsJsonArray();
 
         GetPlayerData[] workers = new GetPlayerData[members.size()];
-        players = new ArrayList<>(members.size());
+        players = new ArrayList<Player>(members.size());
         for (int i = 0; i < members.size(); i++) {
             JsonObject member = members.get(i).getAsJsonObject();
             workers[i] = new GetPlayerData(member.get("account_id").getAsLong(), this.gui);
@@ -125,7 +133,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         // In the meantime see if GetProvinces is ready
         this.provinces = provinceWorker.get();
 
-        ArrayList<Vehicle> vehicles = new ArrayList<>(5000);
+        ArrayList<Vehicle> vehicles = new ArrayList<Vehicle>(5000);
         long start = System.currentTimeMillis();
         for (GetPlayerData w : workers) {
             Player p = w.get();
@@ -183,7 +191,9 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             Clan clan = get();
             this.gui.publishClanPlayers(clan);
             this.gui.publishClanProvinces(provinces);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Utils.handleException(e, this.gui);
+        } catch (ExecutionException e) {
             Utils.handleException(e, this.gui);
         }
     }

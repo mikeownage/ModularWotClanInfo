@@ -36,10 +36,14 @@ public class GetProvinces extends SwingWorker<ArrayList<Province>, ArrayList<Pro
         // timeout after 12 seconds
         URLConnection.setConnectTimeout(12000);
 
+        BufferedReader membersBufferedReader = null;
         StringBuilder data = new StringBuilder(25000);
-        try (BufferedReader membersBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"))) {
+        try {
+            membersBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"));
             for (String line; (line = membersBufferedReader.readLine()) != null; data.append(line));
-        }System.out.println("P:"+data.length());
+        } finally {
+            if (membersBufferedReader != null) membersBufferedReader.close();
+        }
 
         JsonParser jsonParser = new JsonParser();
         JsonObject json = jsonParser.parse(data.toString()).getAsJsonObject();
@@ -55,7 +59,7 @@ public class GetProvinces extends SwingWorker<ArrayList<Province>, ArrayList<Pro
             return null; // no need for initializing an ArrayList
         }
 
-        ArrayList<Province> provinces = new ArrayList<>(json_provinces.size());
+        ArrayList<Province> provinces = new ArrayList<Province>(json_provinces.size());
         for (JsonElement e : json_provinces) {
             JsonObject o = e.getAsJsonObject();
             String name = o.get("name").getAsString();

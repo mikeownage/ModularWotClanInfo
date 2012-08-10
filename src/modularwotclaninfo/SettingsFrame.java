@@ -41,7 +41,7 @@ public class SettingsFrame extends JFrame {
         this.layout = (GridBagLayout)getContentPane().getLayout();
         if (!settingsFile.exists()) { settingsFile.createNewFile(); }
         this.ini = new Ini(settingsFile);
-        this.vClassSettings = new TreeMap<>(VehicleClassComparator);
+        this.vClassSettings = new TreeMap<String, JComboBox>(VehicleClassComparator);
         createVehicleSettings();
 
         this.setVisible(true);
@@ -181,7 +181,7 @@ public class SettingsFrame extends JFrame {
         // put overall
         ini.put("VehicleTiers", "Unknown", unknownTier.getSelectedItem());
         // put modular rest and prepare <String, Integer>
-        TreeMap<String, Integer> minVClassTiers = new TreeMap<>(SettingsFrame.VehicleClassComparator);
+        TreeMap<String, Integer> minVClassTiers = new TreeMap<String, Integer>(SettingsFrame.VehicleClassComparator);
         for (Map.Entry<String, JComboBox> entry : vClassSettings.entrySet()) {
             String key = entry.getKey();
             JComboBox cBox = entry.getValue();

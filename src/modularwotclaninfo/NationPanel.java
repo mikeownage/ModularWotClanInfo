@@ -23,7 +23,7 @@ public class NationPanel extends javax.swing.JPanel {
 
     public NationPanel(String nation, Vehicle[] vehicles) {
         this.nation = nation;
-        this.vclasses = new ArrayList<>(5);
+        this.vclasses = new ArrayList<ClassPanel>(5);
         initComponents();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         JLabel nationLabel = new JLabel(this.getNation());

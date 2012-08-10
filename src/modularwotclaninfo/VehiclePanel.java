@@ -17,7 +17,7 @@ public class VehiclePanel extends javax.swing.JPanel {
     }
 
     public VehiclePanel(ArrayList<Vehicle> vehicles) {
-        this.nations = new ArrayList<>(6);
+        this.nations = new ArrayList<NationPanel>(6);
         initComponents();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 

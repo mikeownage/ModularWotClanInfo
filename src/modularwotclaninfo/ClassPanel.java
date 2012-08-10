@@ -26,8 +26,8 @@ public class ClassPanel extends JPanel {
 
     public ClassPanel(String vclass, Vehicle[] vehicles) {
         this.vclass = vclass;
-        names = new ArrayList<>(10);
-        numbers = new ArrayList<>(10);
+        names = new ArrayList<JLabel>(10);
+        numbers = new ArrayList<JLabel>(10);
         initComponents();
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         this.add(new JLabel(this.getVclass()+":   "));

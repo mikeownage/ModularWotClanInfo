@@ -32,7 +32,6 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
     @SuppressWarnings("empty-statement")
     protected Vector<PossibleClan> doInBackground() throws Exception
     {
-        long start = System.currentTimeMillis();
         URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats&search="+this.searchTagName.replace(" ", "%20")+"&offset=0&limit=10");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
@@ -44,10 +43,14 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
         // timeout after 5 seconds
         URLConnection.setConnectTimeout(5000);
 
-        StringBuilder data = new StringBuilder(5000); // TODO: find good length
-        try (BufferedReader clanBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"))) {
+        BufferedReader clanBufferedReader = null;
+        StringBuilder data = new StringBuilder(5000);
+        try {
+            clanBufferedReader = new BufferedReader(new InputStreamReader(URLConnection.getInputStream(), "UTF8"));
             for (String line; (line = clanBufferedReader.readLine()) != null; data.append(line));
-        }System.out.println("length: "+data.length());
+        } finally {
+            if (clanBufferedReader != null) clanBufferedReader.close();
+        }
 
         JsonParser jsonParser = new JsonParser();
         JsonObject json = jsonParser.parse(data.toString()).getAsJsonObject();
@@ -57,7 +60,7 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
         }
 
         JsonArray results = json.get("data").getAsJsonObject().get("items").getAsJsonArray();
-        possibleClans = new Vector<>(results.size());
+        possibleClans = new Vector<PossibleClan>(results.size());
         for (JsonElement e : results) {
             JsonObject o = e.getAsJsonObject();
             String name = o.get("name").getAsString();
@@ -67,9 +70,7 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
             ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks."+gui.getServerRegion()+o.get("clan_emblem_url").getAsString()));
             possibleClans.add(new PossibleClan(name, tag, ID, member_count, emblem));
         }
-
         //Collections.sort(possibleClans); // TODO: do we have to sort "better"?
-        System.out.println(System.currentTimeMillis()-start);
         return possibleClans;
     }
 
@@ -78,7 +79,9 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
         try {
             Vector<PossibleClan> clans = get();
             this.gui.publishClans(searchTagName, clans);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Utils.handleException(e, this.gui);
+        } catch (ExecutionException e) {
             Utils.handleException(e, this.gui);
         }
     }

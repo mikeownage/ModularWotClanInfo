@@ -61,9 +61,9 @@ public class GUI extends JFrame {
 
     public GUI() {
         formatter.setMaximumFractionDigits(3);
-        allPossibleClans = new HashMap<>(20);
+        allPossibleClans = new HashMap<String, java.util.Vector<PossibleClan>>(20);
         // create default minimum tiers TODO: rewrite this all better
-        this.minVClassTiers = new TreeMap<>(SettingsFrame.VehicleClassComparator);
+        this.minVClassTiers = new TreeMap<String, Integer>(SettingsFrame.VehicleClassComparator);
         this.minVClassTiers.put("Heavy Tank", 8);
         this.minVClassTiers.put("Medium Tank", 8);
         this.minVClassTiers.put("Light Tank", 5);
@@ -503,7 +503,7 @@ public class GUI extends JFrame {
             nameEntered = vName;
             srcLabel.setForeground(srcLabel.getForeground().brighter());
 
-            ArrayList<Player> players = new ArrayList<>(100); // worst case
+            ArrayList<Player> players = new ArrayList<Player>(100); // worst case
             for (Player p : clan.getPlayers()) {
                 for (Vehicle v : p.getVehicles()) {
                     if (v.getName().equals(vName))
@@ -637,7 +637,7 @@ public class GUI extends JFrame {
         mainVehiclePanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
         membersListScrollPane = new javax.swing.JScrollPane();
-        membersList = new javax.swing.JList<>();
+        membersList = new javax.swing.JList();
         createdByLabel = new javax.swing.JLabel();
         tagButton = new javax.swing.JRadioButton();
         nameButton = new javax.swing.JRadioButton();
