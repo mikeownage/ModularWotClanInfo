@@ -235,31 +235,19 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
         String role = json_data.get("clan").getAsJsonObject().get("member").getAsJsonObject().get("role").getAsString();
 
         JsonObject json_summary = json_data.get("summary").getAsJsonObject();
-
         int battles = json_summary.get("battles_count").getAsInt();
-        int wins = json_summary.get("wins").getAsInt();
-        int losses = json_summary.get("losses").getAsInt();
-        int survived = json_summary.get("survived_battles").getAsInt();
 
         JsonObject json_battles = json_data.get("battles").getAsJsonObject();
-
         int hitRatio = json_battles.get("hits_percents").getAsInt();
-        int dmgDealt = json_battles.get("damage_dealt").getAsInt();
-        int frags = json_battles.get("frags").getAsInt();
-        int spotted = json_battles.get("spotted").getAsInt();
-        int defended = json_battles.get("dropped_capture_points").getAsInt();
-        int captured = json_battles.get("capture_points").getAsInt();
 
         JsonObject json_exp = json_data.get("experience").getAsJsonObject();
-
         int avg_xp = json_exp.get("battle_avg_xp").getAsInt();
 
         JsonArray json_vehicles = json_data.get("vehicles").getAsJsonArray();
-
         ArrayList<Vehicle> vehicles = new ArrayList<Vehicle>(json_vehicles.size());
         for (JsonElement ele : json_vehicles) {
             JsonObject o = ele.getAsJsonObject();
-            String vname = o.get("localized_name").getAsString();
+            String vname = o.get("localized_name").getAsString().replace('_', ' '); // UI opt
             String nation = o.get("nation").getAsString().toUpperCase(); // UI opt
             String vclass = o.get("class").getAsString();
 
@@ -279,22 +267,30 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
 
         double last_updated = json_data.get("updated_at").getAsDouble();
 
-
-        double avg_tier = 0D;
-        int maxTier = 0;
-        if (!vehicles.isEmpty()) {
-            vehicles.trimToSize();
-            for (Vehicle v : vehicles) {
-                avg_tier += v.getTier()*v.getBattles();
-            }
-            avg_tier /= (double)battles;
-            vehicles = Utils.sortVehiclesByTier(vehicles);
-            maxTier = vehicles.get(0).getTier();
-        }
-
         // prevent NaN
-        double avg_dmg=0D, avg_wr=0D, avg_lr=0D, avg_srv=0D, eff=0D;
-        if (battles != 0) {
+        int maxTier = 0;
+        double avg_tier = 0D, avg_dmg=0D, avg_wr=0D, avg_lr=0D, avg_srv=0D, eff=0D;
+        if (battles != 0) { // opt
+            if (!vehicles.isEmpty()) {
+                vehicles.trimToSize();
+                for (Vehicle v : vehicles) {
+                    avg_tier += v.getTier()*v.getBattles();
+                }
+                avg_tier /= (double)battles;
+                vehicles = Utils.sortVehiclesByTier(vehicles);
+                maxTier = vehicles.get(0).getTier();
+            }
+
+            int wins = json_summary.get("wins").getAsInt();
+            int losses = json_summary.get("losses").getAsInt();
+            int survived = json_summary.get("survived_battles").getAsInt();
+
+            int dmgDealt = json_battles.get("damage_dealt").getAsInt();
+            int frags = json_battles.get("frags").getAsInt();
+            int spotted = json_battles.get("spotted").getAsInt();
+            int defended = json_battles.get("dropped_capture_points").getAsInt();
+            int captured = json_battles.get("capture_points").getAsInt();
+
             avg_dmg = (double)dmgDealt/battles;
             avg_wr = (double)wins/battles;
             avg_lr = (double)losses/battles;
@@ -325,7 +321,7 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
         else if ("Treasurer".equals(role))
             roleIcon = new ImageIcon(getClass().getResource("/img/treasurer.png"), "Treasurer");
         else
-           System.err.println("Unknown clanRole: "+role);
+            System.err.println("Unknown clanRole: "+role);
 
         return new Player(this.ID, last_updated, name, role, roleIcon, maxTier,
                 battles, hitRatio, avg_dmg, avg_wr, avg_lr, avg_srv, avg_xp, eff, vehicles);
