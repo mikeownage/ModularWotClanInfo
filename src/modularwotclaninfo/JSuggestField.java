@@ -242,11 +242,14 @@ public class JSuggestField extends JTextField {
                       showSuggest();
                     }
                 } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    list.setSelectedIndex(list.getSelectedIndex() - 1);
-                    list.ensureIndexIsVisible(list.getSelectedIndex() - 1);
-                    lastChosenExistingVariable = list.getSelectedValue();
+                    int i_1 = list.getSelectedIndex() - 1;
+                    if (i_1 >= 0) { // work around a nasty IndexOutOfBoundsException
+                        list.setSelectedIndex(i_1);
+                        list.ensureIndexIsVisible(i_1);
+                        lastChosenExistingVariable = list.getSelectedValue();
+                    }
                 } else if (e.getKeyCode() == KeyEvent.VK_ENTER
-                        & list.getSelectedIndex() != -1 & suggestions.size() > 0) {
+                        && list.getSelectedIndex() != -1 && !suggestions.isEmpty()) {
                     setText(list.getSelectedValue().getClanTag());
                     lastChosenExistingVariable = list.getSelectedValue();
                     fireActionEvent();
