@@ -345,9 +345,11 @@ public class GUI extends JFrame {
     }
 
     private void showAllVehicles() {
-        if (vPlayerPanel != null) mainVehiclePanel.remove(vPlayerPanel);
-        vPlayerPanel = null;
-        vPanel.setVisible(true);
+        if (vPlayerPanel != null) {
+            mainVehiclePanel.remove(vPlayerPanel);
+            vPlayerPanel = null;
+        }
+        if (vPanel != null ) vPanel.setVisible(true);
     }
 
     private void startSearch() {
@@ -366,7 +368,7 @@ public class GUI extends JFrame {
             return;
         } // TODO: regex valid clan tags/names
 
-        // find best matchh ... TODO: rewrite !
+        // find best match ... TODO: rewrite !
         PossibleClan chosen = inputTextField.getLastChosenExistingVariable();
         if (chosen != null) publishClanInfo(chosen);
         String searchType = getTagNameButtonGroup().getSelection().equals(getTagButton().getModel())
@@ -638,6 +640,7 @@ public class GUI extends JFrame {
         rightPanel = new javax.swing.JPanel();
         membersListScrollPane = new javax.swing.JScrollPane();
         membersList = new javax.swing.JList();
+        showAllPlayers = new javax.swing.JButton();
         createdByLabel = new javax.swing.JLabel();
         tagButton = new javax.swing.JRadioButton();
         nameButton = new javax.swing.JRadioButton();
@@ -1046,17 +1049,32 @@ public class GUI extends JFrame {
         });
         membersListScrollPane.setViewportView(membersList);
 
+        showAllPlayers.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
+        showAllPlayers.setForeground(new java.awt.Color(255, 255, 255));
+        showAllPlayers.setText("Show all players");
+        showAllPlayers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showAllPlayersActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(membersListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+            .addGroup(rightPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(showAllPlayers, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
-                .addComponent(membersListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 550, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 49, Short.MAX_VALUE))
+                .addComponent(membersListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 520, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showAllPlayers)
+                .addGap(0, 50, Short.MAX_VALUE))
         );
 
         mainPanel.add(rightPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(880, 31, -1, -1));
@@ -1110,7 +1128,7 @@ public class GUI extends JFrame {
     }//GEN-LAST:event_searchButtonMouseClicked
 
     private void membersListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_membersListValueChanged
-        if (evt.getValueIsAdjusting() == false) {
+        if (!evt.getValueIsAdjusting()) {
             int index = membersList.getSelectedIndex();
             if (index == -1) {
                 leftTopPanel.setVisible(true);
@@ -1150,18 +1168,18 @@ public class GUI extends JFrame {
     private GetPossibleClans gpc;
     private void inputTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_inputTextFieldKeyTyped
         // handle possibilities
-        boolean returnKey = '\b' == evt.getKeyChar();
+        boolean returnKey = ('\b' == evt.getKeyChar());
         String newChar = Character.toString(evt.getKeyChar());
         String text = inputTextField.getText();
         String completeText = (text+newChar).trim().toUpperCase();
         if (text.length() == 0 && returnKey) { // deleted all -> reset cache
             allPossibleClans.clear();
             inputTextField.setSuggestData(new java.util.Vector<PossibleClan>(0));
-        } else if (!returnKey) {
+        } else if (!returnKey) { // new char added
             // try 2 use cache
             if (allPossibleClans.containsKey(completeText)) {
                 inputTextField.setSuggestData(allPossibleClans.get(completeText));
-                return;
+                return; // successful
             }
             //if (gpc != null && !gpc.isDone()) gpc.cancel(true); // cancel old thread
             if (completeText.isEmpty()) return;
@@ -1201,7 +1219,7 @@ public class GUI extends JFrame {
     }//GEN-LAST:event_inputTextFieldKeyTyped
 
     private void euLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_euLabelMouseClicked
-        if ("com".equals(serverRegion) && inputTextField.isEnabled()) {
+        if (!"eu".equals(serverRegion) && inputTextField.isEnabled()) {
             serverRegion = "eu";
             euLabel.setIcon(euOn);
             comLabel.setIcon(usaOff);
@@ -1210,7 +1228,7 @@ public class GUI extends JFrame {
     }//GEN-LAST:event_euLabelMouseClicked
 
     private void comLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comLabelMouseClicked
-        if ("eu".equals(serverRegion) && inputTextField.isEnabled()) {
+        if (!"com".equals(serverRegion) && inputTextField.isEnabled()) {
             serverRegion = "com";
             comLabel.setIcon(usaOn);
             euLabel.setIcon(euOff);
@@ -1241,11 +1259,18 @@ public class GUI extends JFrame {
                 mainVehiclePanel.add(vPanel, BorderLayout.CENTER);
             tanksProvincesButton.setText("Provinces");
         }
-        // artefacts
+        // FIXME: artefacts
         mainVehiclePanel.invalidate();
         mainVehiclePanel.revalidate();
         mainVehiclePanel.repaint();
     }//GEN-LAST:event_tanksProvincesButtonActionPerformed
+
+    private void showAllPlayersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showAllPlayersActionPerformed
+        leftTopPanel.setVisible(true);
+        selectedPlayer = null;
+        showAllVehicles();
+    }//GEN-LAST:event_showAllPlayersActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel avgDmgLabel;
     private javax.swing.JLabel avgDmgTextLabel;
@@ -1298,6 +1323,7 @@ public class GUI extends JFrame {
     private javax.swing.JButton searchButton;
     private javax.swing.JLabel searchForLabel;
     private javax.swing.JLabel searchLabel;
+    private javax.swing.JButton showAllPlayers;
     private javax.swing.JRadioButton tagButton;
     private javax.swing.JLabel tagLabel;
     private javax.swing.ButtonGroup tagNameButtonGroup;
