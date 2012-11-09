@@ -7,6 +7,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
 import javax.swing.SwingWorker;
 
@@ -122,12 +124,19 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
 
         JsonArray members = members_json.get("data").getAsJsonObject().get("members").getAsJsonArray();
 
+        // default SwingWorker thread pool has 10 threads, but we want as much threads
+        // as there are members in the clan because of network wait (-> latency):
+        // before:  |members|/10 * latency
+        //    now:  latency + some thread creation overhead
+        ExecutorService threadPool = Executors.newFixedThreadPool(members.size());
+
         GetPlayerData[] workers = new GetPlayerData[members.size()];
         players = new ArrayList<Player>(members.size());
         for (int i = 0; i < members.size(); i++) {
             JsonObject member = members.get(i).getAsJsonObject();
             workers[i] = new GetPlayerData(member.get("account_id").getAsLong(), this.gui);
-            workers[i].execute();
+            threadPool.submit(workers[i]);
+            //workers[i].execute();
         } // TODO: see if there's some sort of "worker pool" with a getAll() or getFirst()
 
         // In the meantime see if GetProvinces is ready
@@ -142,6 +151,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             // TODO: update progress bar
             // TODO: sort by tier already here ?!? (implementation details)
         }
+        threadPool.shutdown();
         vehicles.trimToSize();
         System.out.printf("Vs:"+vehicles.size()+"\nOverall time: %dms%n", System.currentTimeMillis()-start);
         vehicles = Utils.sortVehiclesByTier(vehicles);
