@@ -569,6 +569,7 @@ public class GUI extends JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         tagNameButtonGroup = new javax.swing.ButtonGroup();
         topPanel = new javax.swing.JPanel();
@@ -644,7 +645,6 @@ public class GUI extends JFrame {
         createdByLabel = new javax.swing.JLabel();
         tagButton = new javax.swing.JRadioButton();
         nameButton = new javax.swing.JRadioButton();
-        searchForLabel = new javax.swing.JLabel();
         inputTextField = new modularwotclaninfo.JSuggestField(this);
         tagNameButtonGroup.add(tagButton);
         tagNameButtonGroup.add(nameButton);
@@ -699,7 +699,7 @@ public class GUI extends JFrame {
                 .addComponent(comLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(282, 282, 282)
                 .addComponent(topLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 429, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 439, Short.MAX_VALUE)
                 .addComponent(optionsButton)
                 .addContainerGap())
         );
@@ -726,13 +726,21 @@ public class GUI extends JFrame {
         mainPanel.setForeground(new java.awt.Color(255, 255, 255));
         mainPanel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         mainPanel.setMinimumSize(new java.awt.Dimension(0, 0));
-        mainPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        mainPanel.setPreferredSize(new java.awt.Dimension(800, 640));
+        mainPanel.setLayout(new java.awt.GridBagLayout());
 
         searchLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         searchLabel.setForeground(new java.awt.Color(255, 255, 255));
         searchLabel.setText("Search:");
         searchLabel.setToolTipText("");
-        mainPanel.add(searchLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(144, 0, 40, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 3;
+        gridBagConstraints.ipady = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 144, 0, 0);
+        mainPanel.add(searchLabel, gridBagConstraints);
 
         searchButton.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         searchButton.setForeground(new java.awt.Color(255, 255, 255));
@@ -742,38 +750,80 @@ public class GUI extends JFrame {
                 searchButtonMouseClicked(evt);
             }
         });
-        mainPanel.add(searchButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(980, 0, 124, -1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 9;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 57;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 7, 0, 0);
+        mainPanel.add(searchButton, gridBagConstraints);
 
         tagTextLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         tagTextLabel.setForeground(new java.awt.Color(255, 255, 255));
         tagTextLabel.setText("Clan Tag:");
-        mainPanel.add(tagTextLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(185, 31, -1, -1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 1, 0, 0);
+        mainPanel.add(tagTextLabel, gridBagConstraints);
 
         tagLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         tagLabel.setForeground(new java.awt.Color(255, 255, 255));
         tagLabel.setToolTipText("");
         tagLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        mainPanel.add(tagLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(238, 31, 60, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 60;
+        gridBagConstraints.ipady = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 5, 0, 0);
+        mainPanel.add(tagLabel, gridBagConstraints);
 
         membersTextLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         membersTextLabel.setForeground(new java.awt.Color(255, 255, 255));
         membersTextLabel.setText("Members:");
-        mainPanel.add(membersTextLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(304, 31, -1, -1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 5, 0, 0);
+        mainPanel.add(membersTextLabel, gridBagConstraints);
 
         membersLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         membersLabel.setForeground(new java.awt.Color(255, 255, 255));
         membersLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        mainPanel.add(membersLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(359, 31, 45, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 45;
+        gridBagConstraints.ipady = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 5, 0, 0);
+        mainPanel.add(membersLabel, gridBagConstraints);
 
         nameTextLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         nameTextLabel.setForeground(new java.awt.Color(255, 255, 255));
         nameTextLabel.setText("Clan Name:");
-        mainPanel.add(nameTextLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 31, -1, -1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 5, 0, 0);
+        mainPanel.add(nameTextLabel, gridBagConstraints);
 
         nameLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         nameLabel.setForeground(new java.awt.Color(255, 255, 255));
         nameLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        mainPanel.add(nameLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(471, 31, 389, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 389;
+        gridBagConstraints.ipady = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 5, 0, 0);
+        mainPanel.add(nameLabel, gridBagConstraints);
 
         leftPanel.setForeground(new java.awt.Color(255, 255, 255));
         leftPanel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
@@ -1018,7 +1068,14 @@ public class GUI extends JFrame {
         });
         leftPanel.add(tanksProvincesButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 460, -1, -1));
 
-        mainPanel.add(leftPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 62, 160, 510));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.ipadx = 160;
+        gridBagConstraints.ipady = 480;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        mainPanel.add(leftPanel, gridBagConstraints);
 
         vehicleScrollPane.setBorder(null);
         vehicleScrollPane.setForeground(new java.awt.Color(255, 255, 255));
@@ -1029,13 +1086,22 @@ public class GUI extends JFrame {
         mainVehiclePanel.setLayout(new java.awt.BorderLayout());
         vehicleScrollPane.setViewportView(mainVehiclePanel);
 
-        mainPanel.add(vehicleScrollPane, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 52, 700, 530));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 700;
+        gridBagConstraints.ipady = 500;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        mainPanel.add(vehicleScrollPane, gridBagConstraints);
 
         rightPanel.setMinimumSize(new java.awt.Dimension(0, 0));
 
         membersListScrollPane.setForeground(new java.awt.Color(255, 255, 255));
         membersListScrollPane.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
-        membersListScrollPane.setPreferredSize(new java.awt.Dimension(240, 561));
+        membersListScrollPane.setPreferredSize(new java.awt.Dimension(240, 560));
 
         membersList.setBackground(new java.awt.Color(15, 10, 5));
         membersList.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
@@ -1071,35 +1137,54 @@ public class GUI extends JFrame {
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
-                .addComponent(membersListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 520, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(membersListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 593, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showAllPlayers)
-                .addGap(0, 50, Short.MAX_VALUE))
+                .addGap(10, 10, 10))
         );
 
-        mainPanel.add(rightPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(880, 31, -1, -1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 7;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.ipadx = 227;
+        gridBagConstraints.ipady = 597;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
+        mainPanel.add(rightPanel, gridBagConstraints);
 
         createdByLabel.setFont(new java.awt.Font("Tahoma", 1, 9)); // NOI18N
         createdByLabel.setForeground(new java.awt.Color(255, 255, 255));
         createdByLabel.setText("Created by [HAVOC]Yoyo117 - EU Server");
         createdByLabel.setToolTipText("");
-        mainPanel.add(createdByLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 580, -1, -1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        mainPanel.add(createdByLabel, gridBagConstraints);
 
         tagButton.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         tagButton.setForeground(new java.awt.Color(255, 255, 255));
         tagButton.setSelected(true);
         tagButton.setText("Tag");
-        mainPanel.add(tagButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(880, 0, -1, -1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 7;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        mainPanel.add(tagButton, gridBagConstraints);
 
         nameButton.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
         nameButton.setForeground(new java.awt.Color(255, 255, 255));
         nameButton.setText("Name");
-        mainPanel.add(nameButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(920, 0, -1, -1));
-
-        searchForLabel.setFont(new java.awt.Font("Tahoma", 1, 10)); // NOI18N
-        searchForLabel.setForeground(new java.awt.Color(255, 255, 255));
-        searchForLabel.setText("Search for:");
-        mainPanel.add(searchForLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 0, 60, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 7;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 40, 0, 0);
+        mainPanel.add(nameButton, gridBagConstraints);
 
         inputTextField.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -1116,7 +1201,14 @@ public class GUI extends JFrame {
                 inputTextFieldKeyTyped(evt);
             }
         });
-        mainPanel.add(inputTextField, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 0, 620, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 6;
+        gridBagConstraints.ipadx = 614;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        mainPanel.add(inputTextField, gridBagConstraints);
 
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
@@ -1126,19 +1218,6 @@ public class GUI extends JFrame {
     private void searchButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_searchButtonMouseClicked
         startSearch();
     }//GEN-LAST:event_searchButtonMouseClicked
-
-    private void membersListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_membersListValueChanged
-        if (!evt.getValueIsAdjusting()) {
-            int index = membersList.getSelectedIndex();
-            if (index == -1) {
-                leftTopPanel.setVisible(true);
-                selectedPlayer = null;
-                showAllVehicles();
-            } else {
-                leftTopPanel.setVisible(false);
-            }
-        }
-    }//GEN-LAST:event_membersListValueChanged
 
     private void inputTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputTextFieldActionPerformed
         inputTextField.setText(evt.getActionCommand());
@@ -1271,6 +1350,19 @@ public class GUI extends JFrame {
         showAllVehicles();
     }//GEN-LAST:event_showAllPlayersActionPerformed
 
+    private void membersListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_membersListValueChanged
+        if (!evt.getValueIsAdjusting()) {
+            int index = membersList.getSelectedIndex();
+            if (index == -1) {
+                leftTopPanel.setVisible(true);
+                selectedPlayer = null;
+                showAllVehicles();
+            } else {
+                leftTopPanel.setVisible(false);
+            }
+        }
+    }//GEN-LAST:event_membersListValueChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel avgDmgLabel;
     private javax.swing.JLabel avgDmgTextLabel;
@@ -1321,7 +1413,6 @@ public class GUI extends JFrame {
     private javax.swing.JLabel playerName;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JButton searchButton;
-    private javax.swing.JLabel searchForLabel;
     private javax.swing.JLabel searchLabel;
     private javax.swing.JButton showAllPlayers;
     private javax.swing.JRadioButton tagButton;
