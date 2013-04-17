@@ -32,7 +32,7 @@ public class GetPossibleClans extends SwingWorker<Vector<PossibleClan>, Vector<P
     @SuppressWarnings("empty-statement")
     protected Vector<PossibleClan> doInBackground() throws Exception
     {
-        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats&search="+this.searchTagName.replace(" ", "%20")+"&offset=0&limit=10");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-site&search="+this.searchTagName.replace(" ", "%20")+"&offset=0&limit=10");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
         URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");

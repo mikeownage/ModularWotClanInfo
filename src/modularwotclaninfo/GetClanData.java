@@ -42,7 +42,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         if (bestMatch == null) { // use fallBack
             //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/?type=table&offset=0&limit=10&order_by="+this.searchType+"&search="+this.clanTagName+"&echo=2&id=clans_index");
             // TODO: does API support orderBy ?!?
-            URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats&search="+this.fallbackInput.replace(" ", "%20")+"&offset=0&limit=10");
+            URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-site&search="+this.fallbackInput.replace(" ", "%20")+"&offset=0&limit=10");
             URLConnection URLConnection = URL.openConnection();
             URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
             URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");
@@ -95,7 +95,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
 
         // get members
         //URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+clanID+"/members/?type=table&offset=0&limit=100&order_by=name&search=&echo=1&id=clan_members_index");
-        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+bestMatch.getID()+"/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+bestMatch.getID()+"/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-site");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
         URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");
@@ -136,6 +136,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             JsonObject member = members.get(i).getAsJsonObject();
             workers[i] = new GetPlayerData(member.get("account_id").getAsLong(), this.gui);
             threadPool.submit(workers[i]);
+            Thread.sleep(100);
             //workers[i].execute();
         } // TODO: see if there's some sort of "worker pool" with a getAll() or getFirst()
 
@@ -143,17 +144,35 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         this.provinces = provinceWorker.get();
 
         ArrayList<Vehicle> vehicles = new ArrayList<Vehicle>(5000);
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         for (GetPlayerData w : workers) {
-            Player p = w.get();
-            players.add(p);
-            vehicles.addAll(p.getVehicles());
+            boolean failed = false;
+            Player p = null;
+            for (int i = 0; i < 10; i++) { // try 10 times maximum
+                try {
+                    p = w.get();
+                    break;
+                } catch (Exception e) {
+                    Thread.sleep(50);
+                    if (i == 9) {
+                        System.out.println("worker failed!");
+                        failed = true;
+                    }
+                    else continue;
+                }
+            }
+            if (failed) {
+                players.add(new Player(0,0D,"UNKNOWN_ERROR","",null,0,0,0,0D,0D,0D,0D,0,0D,new ArrayList<Vehicle>(0)));
+            } else {
+                players.add(p);
+                vehicles.addAll(p.getVehicles());
+            }
             // TODO: update progress bar
             // TODO: sort by tier already here ?!? (implementation details)
         }
         threadPool.shutdown();
         vehicles.trimToSize();
-        System.out.printf("Vs:"+vehicles.size()+"\nOverall time: %dms%n", System.currentTimeMillis()-start);
+        //System.out.printf("Vs:"+vehicles.size()+"\nOverall time: %dms%n", System.currentTimeMillis()-start);
         vehicles = Utils.sortVehiclesByTier(vehicles);
         vehicles = Utils.sortVehiclesByClass(vehicles);
         vehicles = Utils.sortVehiclesByNation(vehicles);

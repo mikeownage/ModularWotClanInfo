@@ -29,7 +29,7 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
     protected Player doInBackground() throws Exception
     {
         //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
-        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-site");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("User-Agent", "Java like Android");
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
