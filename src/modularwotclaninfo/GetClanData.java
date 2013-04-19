@@ -40,9 +40,9 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
     protected Clan doInBackground() throws Exception
     {
         if (bestMatch == null) { // use fallBack
-            //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/?type=table&offset=0&limit=10&order_by="+this.searchType+"&search="+this.clanTagName+"&echo=2&id=clans_index");
+            //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/community/clans/?type=table&offset=0&limit=10&order_by="+this.searchType+"&search="+this.clanTagName+"&echo=2&id=clans_index");
             // TODO: does API support orderBy ?!?
-            URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-site&search="+this.fallbackInput.replace(" ", "%20")+"&offset=0&limit=10");
+            URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/community/clans/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-site&search="+this.fallbackInput.replace(" ", "%20")+"&offset=0&limit=10");
             URLConnection URLConnection = URL.openConnection();
             URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
             URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");
@@ -85,17 +85,17 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
             String tag = json_clan.get("abbreviation").getAsString();
             long ID = json_clan.get("id").getAsLong();
             int member_count = json_clan.get("member_count").getAsInt();
-            ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks.eu"+json_clan.get("clan_emblem_url").getAsString()));
+            ImageIcon emblem = new ImageIcon(new URL("http://worldoftanks" + gui.getServerRegion() +json_clan.get("clan_emblem_url").getAsString()));
             bestMatch = new PossibleClan(name, tag, ID, member_count, emblem);
         }
 
         // get provinces
-        GetProvinces provinceWorker = new GetProvinces(bestMatch.getID(), this.gui);
-        provinceWorker.execute();
+        //GetProvinces provinceWorker = new GetProvinces(bestMatch.getID(), this.gui);
+        //provinceWorker.execute();
 
         // get members
         //URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+clanID+"/members/?type=table&offset=0&limit=100&order_by=name&search=&echo=1&id=clan_members_index");
-        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/clans/"+bestMatch.getID()+"/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-site");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/community/clans/"+bestMatch.getID()+"/api/1.1/?source_token=Intellect_Soft-WoT_Mobile-site");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
         URLConnection.setRequestProperty("Accept-Language", "en-us;q=0.5,en;q=0.3");
@@ -141,7 +141,7 @@ public class GetClanData extends SwingWorker<Clan, Clan> {
         } // TODO: see if there's some sort of "worker pool" with a getAll() or getFirst()
 
         // In the meantime see if GetProvinces is ready
-        this.provinces = provinceWorker.get();
+        //this.provinces = provinceWorker.get();
 
         ArrayList<Vehicle> vehicles = new ArrayList<Vehicle>(5000);
         //long start = System.currentTimeMillis();

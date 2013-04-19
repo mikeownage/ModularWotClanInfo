@@ -11,7 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingWorker;
 
 /**
- *
+
  * @author Yoyo117 (johnp)
  */
 public class GetPlayerData extends SwingWorker<Player, Player> {
@@ -28,8 +28,8 @@ public class GetPlayerData extends SwingWorker<Player, Player> {
     @Override
     protected Player doInBackground() throws Exception
     {
-        //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
-        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/uc/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-site");
+        //URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/community/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-unofficial_stats");
+        URL URL = new URL("http://worldoftanks."+gui.getServerRegion()+"/community/accounts/"+ID+"/api/1.5/?source_token=Intellect_Soft-WoT_Mobile-site");
         URLConnection URLConnection = URL.openConnection();
         URLConnection.setRequestProperty("User-Agent", "Java like Android");
         URLConnection.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
